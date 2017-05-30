@@ -1,9 +1,7 @@
-import re
-import os
-import gzip
+"""Download Tenhou.net mahjong log"""
 import requests
 
-_ARCHIVE_URL = 'http://e.mjv.jp/0/log/archived.cgi'
+_ARCHIVE_URL = 'http://tenhou.net/0/log/?'
 
 
 def _parse_command_line_args():
@@ -12,14 +10,19 @@ def _parse_command_line_args():
         description='Download log from tenhou.net'
     )
     parser.add_argument(
-        'log_id', default='2017042101gm-00c1-0000-4b052ac7',
-        help='Log ID',
+        'log_id', help='Log ID, such as 2017042101gm-00c1-0000-4b052ac7',
     )
     return parser.parse_args()
 
 
 def _download(url):
     resp = requests.get(url)
+    try:
+        resp.raise_for_status()
+    except requests.exceptions.HTTPError as error:
+        if error.response.status_code == 404:
+            raise RuntimeError('Archived log file not found.')
+        raise
     return resp.content
 
 
@@ -30,7 +33,7 @@ def _save(data, filepath):
 
 def _main():
     args = _parse_command_line_args()
-    url = '{}?{}'.format(_ARCHIVE_URL, args.log_id)
+    url = '{}{}'.format(_ARCHIVE_URL, args.log_id)
     data = _download(url)
     filepath = '{}.mjlog'.format(args.log_id)
     _save(data, filepath)
