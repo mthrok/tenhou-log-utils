@@ -20,12 +20,7 @@ def _parse_command_line_args():
 
 def _download(url):
     resp = requests.get(url)
-    try:
-        resp.raise_for_status()
-    except requests.exceptions.HTTPError as error:
-        if error.response.status_code == 404:
-            raise RuntimeError('Archived log file not found.')
-        raise
+    resp.raise_for_status()
     return resp.content
 
 

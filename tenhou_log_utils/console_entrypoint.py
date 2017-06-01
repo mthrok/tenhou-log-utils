@@ -1,13 +1,15 @@
 """Define console entrypoint"""
 import logging
 
+_LG = logging.getLogger(__name__)
+
 
 def _parse_command_line_args():
     import argparse
     parser = argparse.ArgumentParser(
         description='Utility for tenhou.net log files.'
     )
-    subparsers = parser.add_subparsers(dest='sub command')
+    subparsers = parser.add_subparsers(dest='sub_command')
     subparsers.required = True
     _add_subparsers(subparsers)
     return parser.parse_args()
@@ -36,8 +38,16 @@ def _populate_view_options(parser):
 
 ###############################################################################
 def _download_mjlog(args):
+    import sys
+    import requests
     from .download import download_mjlog
-    download_mjlog(args.log_id, args.output)
+    try:
+        download_mjlog(args.log_id, args.output)
+    except requests.exceptions.HTTPError as error:
+        if error.response.status_code == 404:
+            _LG.error('Log file (%s) not found.', args.log_id)
+            sys.exit(1)
+        raise
 
 
 def _populate_download_options(parser):
