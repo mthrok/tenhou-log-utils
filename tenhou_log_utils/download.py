@@ -1,7 +1,10 @@
 """Download Tenhou.net mahjong log"""
+import logging
+
 import requests
 
 _ARCHIVE_URL = 'http://tenhou.net/0/log/?'
+_LG = logging.getLogger(__name__)
 
 
 def _parse_command_line_args():
@@ -31,13 +34,10 @@ def _save(data, filepath):
         file_.write(data)
 
 
-def _main():
-    args = _parse_command_line_args()
-    url = '{}{}'.format(_ARCHIVE_URL, args.log_id)
+def download_mjlog(log_id, outpath):
+    """Download mjlog file on local file"""
+    url = '{}{}'.format(_ARCHIVE_URL, log_id)
+    _LG.info('Downloading %s', log_id)
     data = _download(url)
-    filepath = '{}.mjlog'.format(args.log_id)
-    _save(data, filepath)
-
-
-if __name__ == '__main__':
-    _main()
+    _LG.info('Saving data on %s', outpath)
+    _save(data, outpath)

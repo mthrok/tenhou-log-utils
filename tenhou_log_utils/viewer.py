@@ -1,24 +1,9 @@
-from __future__ import print_function
 from __future__ import division
 
 import logging
 import xml.etree.ElementTree as ET
 
 _LG = logging.getLogger(__name__)
-
-
-def _parse_command_line_args():
-    import argparse
-    parser = argparse.ArgumentParser(
-        description='Command line tool to view log file of tenhou.net'
-    )
-    parser.add_argument(
-        'input_file', help='Input mjlog file.'
-    )
-    parser.add_argument(
-        '--debug', action='store_true',
-    )
-    return parser.parse_args()
 
 
 def _unquote(quoted):
@@ -516,28 +501,9 @@ def _parse_node(tag, attrib):
     else:
         raise NotImplementedError('{}: {}'.format(tag, attrib))
 
-def _parse(filepath):
+
+def parse_mjlog(filepath):
     tree = ET.parse(filepath)
     root = tree.getroot()
     for child in root:
         _parse_node(child.tag, child.attrib)
-
-
-def _init_logger(debug=False):
-    message_format = (
-        '%(asctime)s: %(levelname)5s: %(funcName)10s: %(message)s'
-        if debug else '%(asctime)s: %(levelname)5s: %(message)s'
-    )
-    level = logging.DEBUG if debug else logging.INFO
-    logging.basicConfig(format=message_format, level=level)
-
-
-def _main():
-    args = _parse_command_line_args()
-    _init_logger(args.debug)
-    _parse(args.input_file)
-
-
-
-if __name__ == '__main__':
-    _main()
