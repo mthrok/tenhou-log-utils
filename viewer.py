@@ -42,8 +42,24 @@ def _parse_float_list(val):
     return []
 
 
+def _parse_lobby_type(lobby_type):
+    return {
+        'human': lobby_type & 0x01,
+        'no-red': (lobby_type & 0x02) >> 1,
+        'no-kui': (lobby_type & 0x04) >> 2,
+        'ton-nan': (lobby_type & 0x08) >> 3,
+        'san-mah': (lobby_type & 0x10) >> 4,
+        'toku-jou': (lobby_type & 0x20) >> 5,
+        'soku': (lobby_type & 0x40) >> 6,
+        'jou-kyu': (lobby_type & 0x80) >> 7,
+    }
+
+
 def _parse_lobby(attrib):
-    _LG.info('Lobby Type: %s (%s)', attrib['type'], attrib['lobby'])
+    lobby_type = _parse_lobby_type(int(attrib['type']))
+    _LG.info('Lobby Type: %s (%s)', attrib['type'], attrib.get('lobby', 'Not Defined'))
+    for key, value in lobby_type.items():
+        _LG.info('    %s: %s', key, value)
 
 
 def _parse_player(attrib):
