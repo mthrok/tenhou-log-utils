@@ -318,8 +318,10 @@ def _parse_reach(attrib):
     if step == 1:
         _LG.info(u'Player %s: Reach', who)
     elif step == 2:
-        ten = _parse_int_list(attrib['ten'])
-        _LG.info(u'Player %s: Deposite. Scores: %s', who, ten)
+        # Old logs do not have ten values.
+        if 'ten' in attrib:
+            ten = _parse_int_list(attrib['ten'])
+            _LG.info(u'Player %s: Deposite. Scores: %s', who, ten)
     else:
         raise NotImplementedError('Unexpected condition. {}'.format(attrib))
 
@@ -412,7 +414,10 @@ def _parse_agari(attrib):
     ba = _parse_int_list(attrib['ba'])
     scores = _nest_list(_parse_int_list(attrib['sc']))
     _LG.info('Player %s won.', who)
-    _LG.info('  %s.', 'Ron from player {}'.format(from_) if from_ else 'Tsumo')
+    if from_ == who:
+        _LG.info('  Tsumo.')
+    else:
+        _LG.info('  Ron from player %s', from_)
     _LG.info('  Hand: %s', _parse_hand(hand))
     _LG.info('  Machi: %s', _parse_hand(machi))
     _LG.info('  Dora: %s', _parse_hand(dora))
