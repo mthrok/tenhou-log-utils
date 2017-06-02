@@ -48,14 +48,19 @@ def _parse_lobby(attrib):
 
 
 def _parse_player(attrib):
-    users = [attrib[key] for key in ['n0', 'n1', 'n2', 'n3'] if key in attrib]
-    dans = attrib['dan'].split(',')
-    rates = attrib['rate'].split(',')
-    sexes = attrib['sx'].split(',')
-    _LG.info('Players:')
-    _LG.info('  Index, Dan,     Rate, Sex, Name')
-    for i, (user, dan, rate, sex) in enumerate(zip(users, dans, rates, sexes)):
-        _LG.info('  %5s: %3s, %8s, %3s, %s', i, dan, rate, sex, _unquote(user))
+    if len(attrib) == 1:
+        index = int(list(attrib.keys())[0][1])
+        name = _unquote(list(attrib.values())[0])
+        _LG.info('Player %s (%s) has returned to the game.', index, name)
+    else:
+        users = [attrib[key] for key in ['n0', 'n1', 'n2', 'n3'] if key in attrib]
+        dans = attrib['dan'].split(',')
+        rates = attrib['rate'].split(',')
+        sexes = attrib['sx'].split(',')
+        _LG.info('Players:')
+        _LG.info('  Index, Dan,     Rate, Sex, Name')
+        for i, (user, dan, rate, sex) in enumerate(zip(users, dans, rates, sexes)):
+            _LG.info('  %5s: %3s, %8s, %3s, %s', i, dan, rate, sex, _unquote(user))
 
 
 def _parse_game(attrib):
@@ -472,6 +477,10 @@ def _parse_ryuukyoku(attrib):
             _LG.info('    %s: %s', score, uma)
 
 
+def _parse_bye(attrib):
+    _LG.info('Player %s has left the game.', attrib['who'])
+
+
 def _parse_node(tag, attrib):
     _LG.debug('%s: %s', tag, attrib)
     if tag == 'GO':
@@ -498,6 +507,8 @@ def _parse_node(tag, attrib):
         _parse_agari(attrib)
     elif tag == 'RYUUKYOKU':
         _parse_ryuukyoku(attrib)
+    elif tag == 'BYE':
+        _parse_bye(attrib)
     else:
         raise NotImplementedError('{}: {}'.format(tag, attrib))
 
