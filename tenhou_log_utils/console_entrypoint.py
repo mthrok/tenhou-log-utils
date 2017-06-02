@@ -24,8 +24,8 @@ def _add_subparsers(subparsers):
 
 ###############################################################################
 def _parse_mjlog(args):
-    from tenhou_log_utils.viewer import parse_mjlog
-    parse_mjlog(args.input)
+    import tenhou_log_utils.viewer
+    tenhou_log_utils.viewer.main(args.input)
 
 
 def _populate_view_options(parser):
@@ -65,7 +65,7 @@ def _populate_download_options(parser):
 def _init_logging(debug=False):
     level = logging.DEBUG if debug else logging.INFO
     format_ = (
-        '%(asctime)s: %(levelname)5s: %(message)s' if not debug else
+        '%(message)s' if not debug else
         '%(asctime)s: %(levelname)5s: %(funcName)10s: %(message)s'
     )
     logging.basicConfig(level=level, format=format_)
