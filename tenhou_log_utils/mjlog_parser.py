@@ -27,16 +27,17 @@ def _parse_shuffle(attrib):
 
 
 ###############################################################################
-def _parse_game_mode(lobby_type):
+def _parse_game_mode(game_mode):
+    _LG.debug('  Game Mode: %s', bin(game_mode))
     return {
-        'test': not bool(lobby_type & 0x01),
-        'red': not bool((lobby_type & 0x02) >> 1),
-        'kui': not bool((lobby_type & 0x04) >> 2),
-        'ton-nan': bool((lobby_type & 0x08) >> 3),
-        'sanma': bool((lobby_type & 0x10) >> 4),
-        'tokujou': bool((lobby_type & 0x20) >> 5),
-        'soku': bool((lobby_type & 0x40) >> 6),
-        'joukyu': bool((lobby_type & 0x80) >> 7),
+        'test': not bool(game_mode & 0x01),
+        'red': not bool((game_mode & 0x02) >> 1),
+        'kui': not bool((game_mode & 0x04) >> 2),
+        'ton-nan': bool((game_mode & 0x08) >> 3),
+        'sanma': bool((game_mode & 0x10) >> 4),
+        'tokujou': bool((game_mode & 0x20) >> 5),
+        'soku': bool((game_mode & 0x40) >> 6),
+        'joukyu': bool((game_mode & 0x80) >> 7),
     }
 
 
