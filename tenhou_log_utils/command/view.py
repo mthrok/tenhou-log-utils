@@ -4,7 +4,7 @@ import gzip
 import logging
 import xml.etree.ElementTree as ET
 
-from tenhou_log_utils.mjlog_parser import parse_node
+from tenhou_log_utils.parser import parse_node
 
 _LG = logging.getLogger(__name__)
 
@@ -337,7 +337,7 @@ def _load_gzipped(filepath):
         return ET.parse(file_)
 
 
-def main(filepath):
+def view_mjlog(filepath):
     """Entry point for `view` command."""
     obj = _load_gzipped(filepath) if '.gz' in filepath else ET.parse(filepath)
     for node in obj.getroot():

@@ -23,16 +23,16 @@ def _add_subparsers(subparsers):
 
 
 ###############################################################################
-def _parse_mjlog(args):
-    import tenhou_log_utils.viewer
-    tenhou_log_utils.viewer.main(args.input)
+def _view_mjlog(args):
+    from .view import view_mjlog
+    view_mjlog(args.input)
 
 
 def _populate_view_options(parser):
     parser.add_argument(
         'input', help='Input mjlog file.'
     )
-    parser.set_defaults(func=_parse_mjlog)
+    parser.set_defaults(func=_view_mjlog)
     parser.add_argument('--debug', help='Enable debug log', action='store_true')
 
 
@@ -46,8 +46,9 @@ def _download_mjlog(args):
     except requests.exceptions.HTTPError as error:
         if error.response.status_code == 404:
             _LG.error('Log file (%s) not found.', args.log_id)
-            sys.exit(1)
-        raise
+        else:
+            _LG.exception('Unexpected error.')
+        sys.exit(1)
 
 
 def _populate_download_options(parser):

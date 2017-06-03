@@ -7,17 +7,6 @@ _ARCHIVE_URL = 'http://tenhou.net/0/log/?'
 _LG = logging.getLogger(__name__)
 
 
-def _parse_command_line_args():
-    import argparse
-    parser = argparse.ArgumentParser(
-        description='Download log from tenhou.net'
-    )
-    parser.add_argument(
-        'log_id', help='Log ID, such as 2017042101gm-00c1-0000-4b052ac7',
-    )
-    return parser.parse_args()
-
-
 def _download(url):
     resp = requests.get(url)
     resp.raise_for_status()

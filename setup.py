@@ -12,7 +12,7 @@ def _setup():
         ],
         entry_points={
             'console_scripts': [
-                'tlu = tenhou_log_utils.console_entrypoint:main'
+                'tlu = tenhou_log_utils.command.main:main'
             ]
         },
     )
