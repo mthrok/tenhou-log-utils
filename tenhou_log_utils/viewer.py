@@ -71,8 +71,8 @@ def _print_go(result):
 ################################################################################
 def _print_un(result):
     if len(result) == 1:
-        _LG.info(
-            'Player %s (%s) has returned to the game.', result[0], result[1])
+        index, name, _, _, _ = result[0]
+        _LG.info('Player %s (%s) has returned to the game.', index, name)
         return
 
     _LG.info('Players:')
