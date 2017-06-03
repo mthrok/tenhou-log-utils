@@ -25,6 +25,8 @@ def _add_subparsers(subparsers):
     _populate_view_options(parser)
     parser = subparsers.add_parser('list')
     _populate_list_options(parser)
+    parser = subparsers.add_parser('analyze')
+    _populate_analyze_options(parser)
     parser = subparsers.add_parser('download')
     _populate_download_options(parser)
 
@@ -48,6 +50,16 @@ def _populate_view_options(parser):
     )
     parser.set_defaults(func=_main)
     parser.add_argument('--round', help='Round number to view', type=int)
+    parser.add_argument('--debug', help='Enable debug log', action='store_true')
+
+
+################################################################################
+def _populate_analyze_options(parser):
+    from .analyze import main as _main
+    parser.add_argument(
+        'input', help='Input mjlog file.'
+    )
+    parser.set_defaults(func=_main)
     parser.add_argument('--debug', help='Enable debug log', action='store_true')
 
 
