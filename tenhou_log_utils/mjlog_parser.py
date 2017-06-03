@@ -59,7 +59,7 @@ def _parse_un(attrib):
         if key in attrib:
             indices.append(int(key[1]))
             names.append(_unquote(attrib[key]))
-    dans = attrib['dan'].split(',')
+    dans = attrib['dan'].split(',') if 'dan' in attrib else [None] * 4
     rates = attrib['rate'].split(',')
     sexes = attrib['sx'].split(',')
 
