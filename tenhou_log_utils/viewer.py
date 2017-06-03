@@ -55,34 +55,37 @@ def _print_hand(tiles):
 
 
 ################################################################################
-def _print_shuffle(result):
+def _print_shuffle(data):
     _LG.info('Shuffle:')
-    _LG.info('  Seed: %s', result['seed'])
-    _LG.info('  Ref: %s', result['ref'])
+    _LG.info('  Seed: %s', data['seed'])
+    _LG.info('  Ref: %s', data['ref'])
 
 
 ################################################################################
-def _print_go(result):
-    _LG.info('Lobby%s:', '' if result['num'] < 0 else ' %s' % result['num'])
-    for key, value in result['type'].items():
+def _print_go(data):
+    _LG.info('Lobby%s:', '' if data['num'] < 0 else ' %s' % data['num'])
+    for key, value in data['mode'].items():
         _LG.info('    %s: %s', key, value)
 
 
 ################################################################################
-def _print_un(result):
-    if len(result) == 1:
-        index, name, _, _, _ = result[0]
+def _print_un(data):
+    if len(data) == 1:
+        index, name = data[0]['index'], data[0]['name']
         _LG.info('Player %s (%s) has returned to the game.', index, name)
         return
 
     _LG.info('Players:')
-    for i, user, dan, rate, sex in result:
-        _LG.info('  %5s: %3s, %8s, %3s, %s', i, dan, rate, sex, user)
+    _LG.info('  %5s: %3s, %8s, %3s, %s', 'Index', 'Dan', 'Rate', 'Sex', 'Name')
+    for datum in data:
+        index, name = datum['index'], datum['name']
+        dan, rate, sex = datum['dan'], datum['rate'], datum['sex']
+        _LG.info('  %5s: %3s, %8.2f, %3s, %s', index, dan, rate, sex, name)
 
 
 ################################################################################
-def _print_taikyoku(result):
-    _LG.info('Dealer: %s', result['oya'])
+def _print_taikyoku(data):
+    _LG.info('Dealer: %s', data['oya'])
 
 
 ################################################################################
@@ -91,57 +94,57 @@ def _print_scores(scores):
         _LG.info('  %5s: %4s00', i, score)
 
 
-def _print_init(result):
+def _print_init(data):
     _LG.info('=' * 40)
     _LG.info('Initial Game State:')
-    _LG.info('  Round: %s', result['round'])
-    _LG.info('  Combo: %s', result['combo'])
-    _LG.info('  Reach: %s', result['reach'])
-    _LG.info('  Dice 1: %s', result['dice1'])
-    _LG.info('  Dice 2: %s', result['dice2'])
-    _LG.info('  Dora Indicator: %s', _print_hand([result['dora_indicator']]))
+    _LG.info('  Round: %s', data['round'])
+    _LG.info('  Combo: %s', data['combo'])
+    _LG.info('  Reach: %s', data['reach'])
+    _LG.info('  Dice 1: %s', data['dice1'])
+    _LG.info('  Dice 2: %s', data['dice2'])
+    _LG.info('  Dora Indicator: %s', _print_hand([data['dora_indicator']]))
     _LG.info('Initial Scores:')
-    _print_scores(result['scores'])
-    _LG.info('Dealer: %s', result['oya'])
+    _print_scores(data['scores'])
+    _LG.info('Dealer: %s', data['oya'])
     _LG.info('Initial Hands:')
-    for i, hand in enumerate(result['hands']):
+    for i, hand in enumerate(data['hands']):
         _LG.info('  %5s: %s', i, _print_hand(hand))
 
 
 ################################################################################
-def _print_draw(result):
-    tile = _tile2unicode(result['tile'])
-    _LG.info('Player %s: Draw    %s', result['player'], tile)
+def _print_draw(data):
+    tile = _tile2unicode(data['tile'])
+    _LG.info('Player %s: Draw    %s', data['player'], tile)
 
 
 ################################################################################
-def _print_discard(result):
-    tile = _tile2unicode(result['tile'])
-    _LG.info('Player %s: Discard %s', result['player'], tile)
+def _print_discard(data):
+    tile = _tile2unicode(data['tile'])
+    _LG.info('Player %s: Discard %s', data['player'], tile)
 
 
 ################################################################################
-def _print_call(result):
-    tiles = u''.join([_tile2unicode(tile) for tile in result['mentsu']])
-    if result['player'] == result['from']:
+def _print_call(data):
+    tiles = u''.join([_tile2unicode(tile) for tile in data['mentsu']])
+    if data['player'] == data['from']:
         from_ = u''
     else:
-        from_ = u'from player {}'.format(result['from'])
+        from_ = u'from player {}'.format(data['from'])
     _LG.info(
-        u'Player %s: %s %s: %s', result['player'], result['type'], from_, tiles)
+        u'Player %s: %s %s: %s', data['player'], data['type'], from_, tiles)
 
 
 ################################################################################
-def _print_reach(result):
-    if result['step'] == 1:
-        _LG.info(u'Player %s: Reach', result['player'])
-    elif result['step'] == 2:
-        _LG.info(u'Player %s made deposite.', result['player'])
-        if 'ten' in result:
+def _print_reach(data):
+    if data['step'] == 1:
+        _LG.info(u'Player %s: Reach', data['player'])
+    elif data['step'] == 2:
+        _LG.info(u'Player %s made deposite.', data['player'])
+        if 'ten' in data:
             _LG.info(u'New scores:')
-            _print_scores(result['ten'])
+            _print_scores(data['ten'])
     else:
-        raise NotImplementedError('Unexpected step value: {}'.format(result))
+        raise NotImplementedError('Unexpected step value: {}'.format(data))
 
 
 ################################################################################
@@ -157,7 +160,7 @@ def _print_final_scores(final_scores):
         _LG.info('    %4s00: %5s', int(score), uma)
 
 
-def _print_agari(result):
+def _print_agari(data):
     limit = [
         'No limit',
         'Mangan',
@@ -233,42 +236,42 @@ def _print_agari(result):
         'Ura-dora',
         'Aka-dora',
     ]
-    _LG.info('Player %s wins.', result['player'])
-    if result['player'] == result['from']:
+    _LG.info('Player %s wins.', data['player'])
+    if data['player'] == data['from']:
         _LG.info('  Tsumo.')
     else:
-        _LG.info('  Ron from player %s', result['from'])
-    _LG.info('  Hand: %s', _print_hand(result['hand']))
-    _LG.info('  Machi: %s', _print_hand(result['machi']))
-    _LG.info('  Dora Indicator: %s', _print_hand(result['dora']))
-    if result['ura_dora']:
-        _LG.info('  Ura Dora: %s', _print_hand(result['ura_dora']))
+        _LG.info('  Ron from player %s', data['from'])
+    _LG.info('  Hand: %s', _print_hand(data['hand']))
+    _LG.info('  Machi: %s', _print_hand(data['machi']))
+    _LG.info('  Dora Indicator: %s', _print_hand(data['dora']))
+    if data['ura_dora']:
+        _LG.info('  Ura Dora: %s', _print_hand(data['ura_dora']))
     _LG.info('  Yaku:')
-    for yaku, han in result['yaku']:
+    for yaku, han in data['yaku']:
         _LG.info('      %s (%s): %s [Han]', yaku_name[yaku], yaku, han)
-    if result['yakuman']:
-        for yaku in result['yakuman']:
+    if data['yakuman']:
+        for yaku in data['yakuman']:
             _LG.info('      %s (%s)', yaku_name[yaku], yaku)
-    _LG.info('  Fu: %s', result['ten'][0])
-    _LG.info('  Score: %s', result['ten'][1])
-    if result['ten'][2]:
-        _LG.info('    - %s', limit[result['ten'][2]])
-    _print_ba(result['ba'])
+    _LG.info('  Fu: %s', data['ten'][0])
+    _LG.info('  Score: %s', data['ten'][1])
+    if data['ten'][2]:
+        _LG.info('    - %s', limit[data['ten'][2]])
+    _print_ba(data['ba'])
     _LG.info('  Scores:')
-    for cur, def_ in result['scores']:
+    for cur, def_ in data['scores']:
         _LG.info('    %4s00: %5s', cur, def_)
 
-    if 'final_scores' in result:
-        _print_final_scores(result['final_scores'])
+    if 'final_scores' in data:
+        _print_final_scores(data['final_scores'])
 
 
 ###############################################################################
-def _print_dora(result):
-    _LG.info('New Dora Indicator: %s', _print_hand([result['hai']]))
+def _print_dora(data):
+    _LG.info('New Dora Indicator: %s', _print_hand([data['hai']]))
 
 
 ###############################################################################
-def _print_ryuukyoku(result):
+def _print_ryuukyoku(data):
     reason = {
         'nm': 'Nagashi Mangan',
         'yao9': '9-Shu 9-Hai',
@@ -280,52 +283,52 @@ def _print_ryuukyoku(result):
     }
 
     _LG.info('Ryukyoku:')
-    _LG.info('  Reason: %s', reason[result['type']])
-    for i, hand in enumerate(result['hands']):
+    _LG.info('  Reason: %s', reason[data['type']])
+    for i, hand in enumerate(data['hands']):
         _LG.info('Player %s: %s', i, _print_hand(hand))
-    for cur, def_ in result['scores']:
+    for cur, def_ in data['scores']:
         _LG.info('    %s: %s', cur, def_)
-    _print_ba(result['ba'])
-    if 'final_scores' in result:
-        _print_final_scores(result['final_scores'])
+    _print_ba(data['ba'])
+    if 'final_scores' in data:
+        _print_final_scores(data['final_scores'])
 
 
 ################################################################################
-def _print_bye(result):
-    _LG.info('Player %s has left the game.', result['player'])
+def _print_bye(data):
+    _LG.info('Player %s has left the game.', data['player'])
 
 
 ################################################################################
-def _print_node(tag, result):
-    _LG.debug('%s: %s', tag, result)
+def _print_node(tag, data):
+    _LG.debug('%s: %s', tag, data)
     if tag == 'GO':
-        _print_go(result)
+        _print_go(data)
     elif tag == 'UN':
-        _print_un(result)
+        _print_un(data)
     elif tag == 'TAIKYOKU':
-        _print_taikyoku(result)
+        _print_taikyoku(data)
     elif tag == 'SHUFFLE':
-        _print_shuffle(result)
+        _print_shuffle(data)
     elif tag == 'INIT':
-        _print_init(result)
+        _print_init(data)
     elif tag == 'DORA':
-        _print_dora(result)
+        _print_dora(data)
     elif tag == 'DRAW':
-        _print_draw(result)
+        _print_draw(data)
     elif tag == 'DISCARD':
-        _print_discard(result)
+        _print_discard(data)
     elif tag == 'CALL':
-        _print_call(result)
+        _print_call(data)
     elif tag == 'REACH':
-        _print_reach(result)
+        _print_reach(data)
     elif tag == 'AGARI':
-        _print_agari(result)
+        _print_agari(data)
     elif tag == 'RYUUKYOKU':
-        _print_ryuukyoku(result)
+        _print_ryuukyoku(data)
     elif tag == 'BYE':
-        _print_bye(result)
+        _print_bye(data)
     else:
-        raise NotImplementedError('{}: {}'.format(tag, result))
+        raise NotImplementedError('{}: {}'.format(tag, data))
 
 
 ################################################################################
@@ -339,4 +342,4 @@ def main(filepath):
     obj = _load_gzipped(filepath) if '.gz' in filepath else ET.parse(filepath)
     for node in obj.getroot():
         result = parse_node(node.tag, node.attrib)
-        _print_node(result['tag'], result['result'])
+        _print_node(result['tag'], result['data'])

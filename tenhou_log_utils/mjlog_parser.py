@@ -27,23 +27,23 @@ def _parse_shuffle(attrib):
 
 
 ###############################################################################
-def _parse_lobby_type(lobby_type):
+def _parse_game_mode(lobby_type):
     return {
-        'human': lobby_type & 0x01,
-        'no-red': (lobby_type & 0x02) >> 1,
-        'no-kui': (lobby_type & 0x04) >> 2,
-        'ton-nan': (lobby_type & 0x08) >> 3,
-        'san-mah': (lobby_type & 0x10) >> 4,
-        'toku-jou': (lobby_type & 0x20) >> 5,
-        'soku': (lobby_type & 0x40) >> 6,
-        'jou-kyu': (lobby_type & 0x80) >> 7,
+        'test': not bool(lobby_type & 0x01),
+        'red': not bool((lobby_type & 0x02) >> 1),
+        'kui': not bool((lobby_type & 0x04) >> 2),
+        'ton-nan': bool((lobby_type & 0x08) >> 3),
+        'sanma': bool((lobby_type & 0x10) >> 4),
+        'tokujou': bool((lobby_type & 0x20) >> 5),
+        'soku': bool((lobby_type & 0x40) >> 6),
+        'joukyu': bool((lobby_type & 0x80) >> 7),
     }
 
 
 def _parse_go(attrib):
-    type_ = _parse_lobby_type(int(attrib['type']))
+    mode = _parse_game_mode(int(attrib['type']))
     number_ = int(attrib.get('lobby', '-1'))
-    return {'type': type_, 'num': number_}
+    return {'mode': mode, 'num': number_}
 
 
 ###############################################################################
@@ -51,7 +51,10 @@ def _parse_un(attrib):
     if len(attrib) == 1:  # Disconnected player has returned
         index = int(list(attrib.keys())[0][1])
         name = _unquote(list(attrib.values())[0])
-        return [(index, name, None, None, None)]
+        return [{
+            'index': index, 'name': name,
+            'dan': None, 'rate': None, 'sex': None
+        }]
 
 
     indices, names = [], []
@@ -60,13 +63,13 @@ def _parse_un(attrib):
             indices.append(int(key[1]))
             names.append(_unquote(attrib[key]))
     dans = attrib['dan'].split(',') if 'dan' in attrib else [None] * 4
-    rates = attrib['rate'].split(',')
+    rates = _parse_str_list(attrib['rate'], type_=float)
     sexes = attrib['sx'].split(',')
 
-    result = []
-    for i, name, dan, rate, sex in zip(indices, names, dans, rates, sexes):
-        result.append((i, name, dan, rate, sex))
-    return result
+    return [
+        {'index': i, 'name': name, 'dan': dan, 'rate': rate, 'sex': sex}
+        for i, name, dan, rate, sex in zip(indices, names, dans, rates, sexes)
+    ]
 
 
 ################################################################################
@@ -333,38 +336,38 @@ def _parse_bye(attrib):
 def parse_node(tag, attrib):
     _LG.debug('%s: %s', tag, attrib)
     if tag == 'GO':
-        result = _parse_go(attrib)
+        data = _parse_go(attrib)
     elif tag == 'UN':
-        result = _parse_un(attrib)
+        data = _parse_un(attrib)
     elif tag == 'TAIKYOKU':
-        result = _parse_taikyoku(attrib)
+        data = _parse_taikyoku(attrib)
     elif tag == 'SHUFFLE':
-        result = _parse_shuffle(attrib)
+        data = _parse_shuffle(attrib)
     elif tag == 'INIT':
-        result = _parse_init(attrib)
+        data = _parse_init(attrib)
     elif tag == 'DORA':
-        result = _parse_dora(attrib)
+        data = _parse_dora(attrib)
     elif tag[0] in {'T', 'U', 'V', 'W'}:
-        result = _parse_draw(tag)
+        data = _parse_draw(tag)
         tag = 'DRAW'
     elif tag[0] in {'D', 'E', 'F', 'G'}:
-        result = _parse_discard(tag)
+        data = _parse_discard(tag)
         tag = 'DISCARD'
     elif tag == 'N':
-        result = _parse_call(attrib)
+        data = _parse_call(attrib)
         tag = 'CALL'
     elif tag == 'REACH':
-        result = _parse_reach(attrib)
+        data = _parse_reach(attrib)
     elif tag == 'AGARI':
-        result = _parse_agari(attrib)
+        data = _parse_agari(attrib)
     elif tag == 'RYUUKYOKU':
-        result = _parse_ryuukyoku(attrib)
+        data = _parse_ryuukyoku(attrib)
     elif tag == 'BYE':
-        result = _parse_bye(attrib)
+        data = _parse_bye(attrib)
     else:
         raise NotImplementedError('{}: {}'.format(tag, attrib))
-    _LG.debug('%s: %s', tag, result)
-    return {'tag': tag, 'result': result}
+    _LG.debug('%s: %s', tag, data)
+    return {'tag': tag, 'data': data}
 
 ###############################################################################
 def parse_mjlog(root_node):
