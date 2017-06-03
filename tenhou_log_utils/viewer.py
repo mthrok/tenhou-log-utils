@@ -1,5 +1,6 @@
 from __future__ import division
 
+import gzip
 import logging
 import xml.etree.ElementTree as ET
 
@@ -321,8 +322,14 @@ def _print_node(tag, result):
 
 
 ################################################################################
+def _load_gzipped(filepath):
+    with gzip.open(filepath) as file_:
+        return ET.parse(file_)
+
+
 def main(filepath):
     """Entry point for `view` command."""
-    for node in ET.parse(filepath).getroot():
+    obj = _load_gzipped(filepath) if '.gz' in filepath else ET.parse(filepath)
+    for node in obj.getroot():
         result = parse_node(node.tag, node.attrib)
         _print_node(result['tag'], result['result'])
