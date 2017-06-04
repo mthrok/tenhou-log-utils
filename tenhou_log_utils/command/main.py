@@ -25,16 +25,12 @@ def _add_subparsers(subparsers):
 
 
 ###############################################################################
-def _view_mjlog(args):
-    from .view import view_mjlog
-    view_mjlog(args.input)
-
-
 def _populate_view_options(parser):
+    from .view import view_mjlog
     parser.add_argument(
         'input', help='Input mjlog file.'
     )
-    parser.set_defaults(func=_view_mjlog)
+    parser.set_defaults(func=view_mjlog)
     parser.add_argument('--debug', help='Enable debug log', action='store_true')
 
 
@@ -48,6 +44,7 @@ def _populate_list_options(parser):
     parser.set_defaults(func=list_mjlog)
 
 
+###############################################################################
 def _download_mjlog(args):
     import sys
     import requests
