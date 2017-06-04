@@ -93,7 +93,6 @@ def _print_scores(scores):
 
 
 def _print_init(data):
-    _LG.info('=' * 40)
     _LG.info('Initial Game State:')
     _LG.info('  Round: %s', data['round'])
     _LG.info('  Combo: %s', data['combo'])
@@ -101,10 +100,10 @@ def _print_init(data):
     _LG.info('  Dice 1: %s', data['dices'][0])
     _LG.info('  Dice 2: %s', data['dices'][1])
     _LG.info('  Dora Indicator: %s', _print_hand([data['dora_indicator']]))
-    _LG.info('Initial Scores:')
+    _LG.info('  Initial Scores:')
     _print_scores(data['scores'])
-    _LG.info('Dealer: %s', data['oya'])
-    _LG.info('Initial Hands:')
+    _LG.info('  Dealer: %s', data['oya'])
+    _LG.info('  Initial Hands:')
     for i, hand in enumerate(data['hands']):
         _LG.info('  %5s: %s', i, _print_hand(hand))
 
@@ -261,6 +260,7 @@ def _print_agari(data):
 
     if 'final_scores' in data:
         _print_final_scores(data['final_scores'])
+    _LG.info('=' * 40)
 
 
 ###############################################################################
@@ -289,6 +289,7 @@ def _print_ryuukyoku(data):
     _print_ba(data['ba'])
     if 'final_scores' in data:
         _print_final_scores(data['final_scores'])
+    _LG.info('=' * 40)
 
 
 ################################################################################
