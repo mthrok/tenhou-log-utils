@@ -246,7 +246,7 @@ def _print_agari(data):
         _LG.info('  Ura Dora: %s', _print_hand(data['ura_dora']))
     _LG.info('  Yaku:')
     for yaku, han in data['yaku']:
-        _LG.info('      %s (%s): %s [Han]', yaku_name[yaku], yaku, han)
+        _LG.info('      %-20s (%2d): %2d [Han]', yaku_name[yaku], yaku, han)
     if data['yakuman']:
         for yaku in data['yakuman']:
             _LG.info('      %s (%s)', yaku_name[yaku], yaku)

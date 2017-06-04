@@ -74,7 +74,3 @@ def main():
     args = _parse_command_line_args()
     _init_logging(args.debug)
     args.func(args)
-
-
-if __name__ == '__main__':
-    main()
