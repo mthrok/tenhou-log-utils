@@ -1,8 +1,7 @@
 from __future__ import division
+from __future__ import absolute_import
 
-import gzip
 import logging
-import xml.etree.ElementTree as ET
 
 from tenhou_log_utils.parser import parse_node
 
@@ -332,14 +331,9 @@ def _print_node(tag, data):
 
 
 ################################################################################
-def _load_gzipped(filepath):
-    with gzip.open(filepath) as file_:
-        return ET.parse(file_)
-
-
 def view_mjlog(filepath):
     """Entry point for `view` command."""
-    obj = _load_gzipped(filepath) if '.gz' in filepath else ET.parse(filepath)
-    for node in obj.getroot():
+    from tenhou_log_utils.io import load_mjlog
+    for node in load_mjlog(filepath).getroot():
         result = parse_node(node.tag, node.attrib)
         _print_node(result['tag'], result['data'])
