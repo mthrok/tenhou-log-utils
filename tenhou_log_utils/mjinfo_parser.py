@@ -15,6 +15,25 @@ def _fetch_subdir_paths(path):
     return [subdir for subdir in subdirs if os.path.isdir(subdir)]
 
 
+def _get_flash_root_linux():
+    home = os.path.expanduser('~')
+    platform_dirs = [
+        # Default
+        ('.macromedia', 'Flash_Player',),
+        # Chrome
+        (
+            '.config', 'google-chrome', '*',
+            'Pepper Data', 'Shockwave Flash', 'WritableRoot',
+        ),
+        # Chromium
+        (
+            '.config', 'chromium', '*',
+            'Pepper Data', 'Shockwave Flash', 'WritableRoot',
+        ),
+    ]
+    return [os.path.join(home, *platform) for platform in platform_dirs]
+
+
 def _get_flash_root_mac():
     home = os.path.expanduser('~')
     platform_dirs = [
@@ -89,6 +108,8 @@ def parse_mjinfo():
     """
     if sys.platform == 'darwin':
         root_dirs = _get_flash_root_mac()
+    elif sys.platform.startswith('linux'):
+        root_dirs = _get_flash_root_linux()
     else:
         raise NotImplementedError(
             '`list` function is not implemented for %s' % sys.platform)

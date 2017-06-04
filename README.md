@@ -9,9 +9,7 @@ Currently two features are available.
 
  - View `mjlog` file in console.
 
- - List up game IDs from your local flash cached.    
-**Currently only for Mac.**    
-(To extend this to other OS, let me know the flash storage path of your OS.)
+ - List up game IDs from your local flash cached.
 
 ## Installation
 
@@ -65,8 +63,6 @@ optional arguments:
 ```
 
 ### 1. List up your game history.
-
-(**Mac OS only**)
 
 Using `list` sub command you can list up the information on your play history.
 
