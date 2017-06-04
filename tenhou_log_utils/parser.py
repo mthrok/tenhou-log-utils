@@ -1,9 +1,13 @@
+"""Functionality to parse mjlog (XML) data"""
+from __future__ import absolute_import
 from __future__ import division
 
 import logging
 from tenhou_log_utils.io import ensure_unicode, unquote
 
 _LG = logging.getLogger(__name__)
+
+# TODO: Expose all parse_XX functions.
 
 
 def _parse_str_list(val, type_):
@@ -340,7 +344,7 @@ def parse_node(tag, attrib):
     tag : str
         Tags such as 'GO', 'DORA', 'AGARI' etc...
 
-    attrib: dict
+    attrib: dict or list
         Attribute of the node
 
     Returns

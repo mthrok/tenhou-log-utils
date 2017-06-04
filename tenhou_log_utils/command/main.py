@@ -1,4 +1,6 @@
 """Define console entrypoint"""
+from __future__ import absolute_import
+
 import logging
 
 _LG = logging.getLogger(__name__)
@@ -26,47 +28,34 @@ def _add_subparsers(subparsers):
 
 ###############################################################################
 def _populate_view_options(parser):
-    from .view import view_mjlog
+    from .view import main as _main
     parser.add_argument(
         'input', help='Input mjlog file.'
     )
-    parser.set_defaults(func=view_mjlog)
+    parser.set_defaults(func=_main)
     parser.add_argument('--debug', help='Enable debug log', action='store_true')
 
 
 ###############################################################################
 def _populate_list_options(parser):
-    from .list_mjlog import list_mjlog
+    from .list_mjlog import main as _main
     parser.add_argument(
         '--id-only', help='Print log IDs only.', action='store_true')
     parser.add_argument(
         '--debug', help='Enable debug log', action='store_true')
-    parser.set_defaults(func=list_mjlog)
+    parser.set_defaults(func=_main)
 
 
 ###############################################################################
-def _download_mjlog(args):
-    import sys
-    import requests
-    from .download import download_mjlog
-    try:
-        download_mjlog(args.log_id, args.output)
-    except requests.exceptions.HTTPError as error:
-        if error.response.status_code == 404:
-            _LG.error('Log file (%s) not found.', args.log_id)
-        else:
-            _LG.exception('Unexpected error.')
-        sys.exit(1)
-
-
 def _populate_download_options(parser):
+    from .download import main as _main
     parser.add_argument(
         'log_id', help='Play log ID'
     )
     parser.add_argument(
         'output', help='Output file path.'
     )
-    parser.set_defaults(func=_download_mjlog)
+    parser.set_defaults(func=_main)
     parser.add_argument('--debug', help='Enable debug log', action='store_true')
 
 

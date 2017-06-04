@@ -1,4 +1,7 @@
 """Download Tenhou.net mahjong log"""
+from __future__ import absolute_import
+
+import sys
 import logging
 
 import requests
@@ -18,10 +21,21 @@ def _save(data, filepath):
         file_.write(data)
 
 
-def download_mjlog(log_id, outpath):
-    """Download mjlog file on local file"""
+def _download_mjlog(log_id, outpath):
     url = '{}{}'.format(_ARCHIVE_URL, log_id)
     _LG.info('Downloading %s', log_id)
     data = _download(url)
     _LG.info('Saving data on %s', outpath)
     _save(data, outpath)
+
+
+def main(args):
+    """Download mjlog file on local file"""
+    try:
+        _download_mjlog(args.log_id, args.output)
+    except requests.exceptions.HTTPError as error:
+        if error.response.status_code == 404:
+            _LG.error('Log file (%s) not found.', args.log_id)
+        else:
+            _LG.exception('Unexpected error.')
+        sys.exit(1)

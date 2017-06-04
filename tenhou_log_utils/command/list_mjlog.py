@@ -1,4 +1,6 @@
 """Entrypoint for `list` command"""
+from __future__ import absolute_import
+
 import logging
 
 from tenhou_log_utils.mjinfo_parser import parse_mjinfo
@@ -21,7 +23,7 @@ def _print_info(logs):
             _LG.info('')
 
 
-def list_mjlog(args):
+def main(args):
     """Entrypoint for `list` sub command. List up game logs and print info"""
     logs = parse_mjinfo()
     if args.id_only:
