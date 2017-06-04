@@ -18,6 +18,8 @@ def _parse_command_line_args():
 def _add_subparsers(subparsers):
     parser = subparsers.add_parser('view')
     _populate_view_options(parser)
+    parser = subparsers.add_parser('list')
+    _populate_list_options(parser)
     parser = subparsers.add_parser('download')
     _populate_download_options(parser)
 
@@ -37,6 +39,15 @@ def _populate_view_options(parser):
 
 
 ###############################################################################
+def _populate_list_options(parser):
+    from .list_mjlog import list_mjlog
+    parser.add_argument(
+        '--id-only', help='Print log IDs only.', action='store_true')
+    parser.add_argument(
+        '--debug', help='Enable debug log', action='store_true')
+    parser.set_defaults(func=list_mjlog)
+
+
 def _download_mjlog(args):
     import sys
     import requests
