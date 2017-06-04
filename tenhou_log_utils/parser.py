@@ -1,17 +1,9 @@
 from __future__ import division
 
 import logging
+from tenhou_log_utils.io import ensure_unicode, unquote
 
 _LG = logging.getLogger(__name__)
-
-
-def _unquote(quoted):
-    try:
-        from urllib.parse import unquote
-        return unquote(quoted)
-    except ImportError:
-        from urllib2 import unquote
-        return unquote(quoted).decode('utf-8')
 
 
 def _parse_str_list(val, type_):
@@ -51,7 +43,7 @@ def _parse_go(attrib):
 def _parse_un(attrib):
     if len(attrib) == 1:  # Disconnected player has returned
         index = int(list(attrib.keys())[0][1])
-        name = _unquote(list(attrib.values())[0])
+        name = unquote(list(attrib.values())[0])
         return [{
             'index': index, 'name': name,
             'dan': None, 'rate': None, 'sex': None
@@ -62,10 +54,10 @@ def _parse_un(attrib):
     for key in ['n0', 'n1', 'n2', 'n3']:
         if key in attrib:
             indices.append(int(key[1]))
-            names.append(_unquote(attrib[key]))
-    dans = attrib['dan'].split(',') if 'dan' in attrib else [None] * 4
+            names.append(unquote(attrib[key]))
+    dans = _parse_str_list(attrib.get('dan', '-1,-1,-1,-1'), type_=int)
     rates = _parse_str_list(attrib['rate'], type_=float)
-    sexes = attrib['sx'].split(',')
+    sexes = _parse_str_list(attrib['sx'], type_=ensure_unicode)
 
     return [
         {'index': i, 'name': name, 'dan': dan, 'rate': rate, 'sex': sex}
@@ -333,7 +325,30 @@ def _parse_bye(attrib):
 
 
 ###############################################################################
+def _ensure_unicode(data):
+    return {
+        ensure_unicode(key): ensure_unicode(value)
+        for key, value in data.items()
+    }
+
+
 def parse_node(tag, attrib):
+    """Parse individual XML node of tenhou mjlog.
+
+    Parameters
+    ----------
+    tag : str
+        Tags such as 'GO', 'DORA', 'AGARI' etc...
+
+    attrib: dict
+        Attribute of the node
+
+    Returns
+    -------
+    dict
+        JSON object
+    """
+    attrib = _ensure_unicode(attrib)
     _LG.debug('%s: %s', tag, attrib)
     if tag == 'GO':
         data = _parse_go(attrib)
