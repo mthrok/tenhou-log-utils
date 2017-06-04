@@ -334,6 +334,6 @@ def _print_node(tag, data):
 def view_mjlog(filepath):
     """Entry point for `view` command."""
     from tenhou_log_utils.io import load_mjlog
-    for node in load_mjlog(filepath).getroot():
+    for node in load_mjlog(filepath):
         result = parse_node(node.tag, node.attrib)
         _print_node(result['tag'], result['data'])
