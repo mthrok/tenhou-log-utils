@@ -5,11 +5,11 @@
 Tenhou Log Utils is command line tools to interact with Tenhou.net mahjong play log, written in Python.
 Currently two features are available.
 
+ - Pick up game IDs of your play form local flash player cache.
+
  - Download `mjlog` file from tenhou.net.
 
  - View `mjlog` file in console.
-
- - List up game IDs from your local flash cached.
 
 ## Installation
 
@@ -51,7 +51,7 @@ tlu --help
 This should print message like the following.
 
 ```
-usage: tlu [-h] {view,list,analyze,download} ...
+usage: tlu [-h] {view,list,download} ...
 
 Utility for tenhou.net log files.
 
