@@ -25,22 +25,33 @@ def _parse_shuffle(attrib):
 ###############################################################################
 def _parse_game_mode(game_mode):
     _LG.debug('  Game Mode: %s', bin(game_mode))
-    return {
-        'test': not bool(game_mode & 0x01),
+    test = not bool(game_mode & 0x01)
+    tokujou = bool((game_mode & 0x20) >> 5)
+    joukyu = bool((game_mode & 0x80) >> 7)
+    if tokujou and joukyu:
+        table = 'tenhou'
+    elif test:
+        table = 'test'
+    elif tokujou:
+        table = 'tokujou'
+    elif joukyu:
+        table = 'joukyu'
+    else:
+        table = 'dan-i'
+    mode = {
         'red': not bool((game_mode & 0x02) >> 1),
         'kui': not bool((game_mode & 0x04) >> 2),
         'ton-nan': bool((game_mode & 0x08) >> 3),
         'sanma': bool((game_mode & 0x10) >> 4),
-        'tokujou': bool((game_mode & 0x20) >> 5),
         'soku': bool((game_mode & 0x40) >> 6),
-        'joukyu': bool((game_mode & 0x80) >> 7),
     }
+    return table, mode
 
 
 def _parse_go(attrib):
-    mode = _parse_game_mode(int(attrib['type']))
+    table, mode = _parse_game_mode(int(attrib['type']))
     number_ = int(attrib.get('lobby', '-1'))
-    return {'mode': mode, 'num': number_}
+    return {'table': table, 'mode': mode, 'num': number_}
 
 
 ###############################################################################
