@@ -1,6 +1,7 @@
 """Define console entrypoint"""
 from __future__ import absolute_import
 
+import sys
 import logging
 
 _LG = logging.getLogger(__name__)
@@ -66,7 +67,7 @@ def _init_logging(debug=False):
         '%(message)s' if not debug else
         '%(asctime)s: %(levelname)5s: %(funcName)10s: %(message)s'
     )
-    logging.basicConfig(level=level, format=format_)
+    logging.basicConfig(level=level, format=format_, stream=sys.stdout)
 
 
 def main():
