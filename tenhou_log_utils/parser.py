@@ -86,9 +86,13 @@ def _parse_taikyoku(attrib):
 
 
 ###############################################################################
+def _parse_score(data):
+    return [score * 100 for score in _parse_str_list(data, type_=int)]
+
+
 def _parse_init(attrib):
     seed = _parse_str_list(attrib['seed'], type_=int)
-    scores = _parse_str_list(attrib['ten'], type_=int)
+    scores = _parse_score(attrib['ten'])
     hands = [
         _parse_str_list(attrib[key], type_=int)
         for key in ['hai0', 'hai1', 'hai2', 'hai3'] if key in attrib
@@ -279,7 +283,7 @@ def _parse_reach(attrib):
     result = {'player': who, 'step': step}
     # Old logs do not have ten values.
     if 'ten' in attrib:
-        result['ten'] = _parse_str_list(attrib['ten'], type_=int)
+        result['score'] = _parse_score(attrib['ten'])
     return result
 
 

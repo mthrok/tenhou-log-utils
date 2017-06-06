@@ -91,7 +91,7 @@ def _print_taikyoku(data):
 ################################################################################
 def _print_scores(scores):
     for i, score in enumerate(scores):
-        _LG.info('  %5s: %4s00', i, score)
+        _LG.info('  %5s: %6s', i, score)
 
 
 def _print_init(data):
@@ -139,9 +139,9 @@ def _print_reach(data):
         _LG.info(u'Player %s: Reach', data['player'])
     elif data['step'] == 2:
         _LG.info(u'Player %s made deposite.', data['player'])
-        if 'ten' in data:
+        if 'score' in data:
             _LG.info(u'New scores:')
-            _print_scores(data['ten'])
+            _print_scores(data['score'])
     else:
         raise NotImplementedError('Unexpected step value: {}'.format(data))
 
