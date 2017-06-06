@@ -47,7 +47,7 @@ def _tile2unicode(tile):
     return u'{} {}'.format(tile_unicodes[tile//4], tile % 4)
 
 
-def convert_hand(tiles, sort=True):
+def convert_hand(tiles, sort=False):
     """Convert hands (int) into unicode characters for print."""
     _tiles = sorted(tiles) if sort else tiles
     return u' '.join([_tile2unicode(tile) for tile in _tiles])
@@ -95,19 +95,20 @@ def _print_scores(scores):
 
 
 def _print_init(data):
+    dora = convert_hand([data['dora_indicator']], True)
     _LG.info('Initial Game State:')
     _LG.info('  Round: %s', data['round'])
     _LG.info('  Combo: %s', data['combo'])
     _LG.info('  Reach: %s', data['reach'])
     _LG.info('  Dice 1: %s', data['dices'][0])
     _LG.info('  Dice 2: %s', data['dices'][1])
-    _LG.info('  Dora Indicator: %s', convert_hand([data['dora_indicator']]))
+    _LG.info('  Dora Indicator: %s', dora)
     _LG.info('  Initial Scores:')
     _print_scores(data['scores'])
     _LG.info('  Dealer: %s', data['oya'])
     _LG.info('  Initial Hands:')
     for i, hand in enumerate(data['hands']):
-        _LG.info('  %5s: %s', i, convert_hand(hand))
+        _LG.info('  %5s: %s', i, convert_hand(hand, True))
 
 
 ################################################################################
@@ -240,11 +241,11 @@ def _print_agari(data):
         _LG.info('  Tsumo.')
     else:
         _LG.info('  Ron from player %s', data['from'])
-    _LG.info('  Hand: %s', convert_hand(data['hand']))
-    _LG.info('  Machi: %s', convert_hand(data['machi']))
-    _LG.info('  Dora Indicator: %s', convert_hand(data['dora']))
+    _LG.info('  Hand: %s', convert_hand(data['hand'], True))
+    _LG.info('  Machi: %s', convert_hand(data['machi'], True))
+    _LG.info('  Dora Indicator: %s', convert_hand(data['dora'], True))
     if data['ura_dora']:
-        _LG.info('  Ura Dora: %s', convert_hand(data['ura_dora']))
+        _LG.info('  Ura Dora: %s', convert_hand(data['ura_dora'], True))
     _LG.info('  Yaku:')
     for yaku, han in data['yaku']:
         _LG.info('      %-20s (%2d): %2d [Han]', yaku_name[yaku], yaku, han)
@@ -267,7 +268,7 @@ def _print_agari(data):
 
 ###############################################################################
 def _print_dora(data):
-    _LG.info('New Dora Indicator: %s', convert_hand([data['hai']]))
+    _LG.info('New Dora Indicator: %s', convert_hand([data['hai']], True))
 
 
 ###############################################################################
@@ -285,7 +286,7 @@ def _print_ryuukyoku(data):
     _LG.info('Ryukyoku:')
     _LG.info('  Reason: %s', reason[data['type']])
     for i, hand in enumerate(data['hands']):
-        _LG.info('Player %s: %s', i, convert_hand(hand))
+        _LG.info('Player %s: %s', i, convert_hand(hand, True))
     for cur, def_ in data['scores']:
         _LG.info('    %s: %s', cur, def_)
     _print_ba(data['ba'])
