@@ -84,7 +84,7 @@ class Config(_ReprMixin, object):
         vals.append(u'Dices: %s, %s' % (self.dices[0], self.dices[1]))
         vals.append(u'Combo: %s' % self.combo)
         vals.append(u'Reach: %s' % self.reach)
-        vals.append(u'Dora:  %s' % self.dora_indicator)
+        vals.append(u'Dora:  %s' % convert_hand([self.dora_indicator]))
         return _indent(vals, level=level)
 
 
@@ -128,6 +128,7 @@ class Hand(_ReprMixin, object):
         self.hidden = Tiles(tiles, sort=True)
         self.exposed = []
         self.nuki = Tiles([], sort=True)
+        self.reach = False
 
     def add(self, tile):
         self.hidden.add(tile)
@@ -162,7 +163,11 @@ class Hand(_ReprMixin, object):
             raise NotImplementedError(call_type)
 
     def to_repr(self, level=0):
-        vals = [u'Menzen: %s' % self.menzen]
+        vals = []
+        if self.reach:
+            vals.append(u'Menzen, Reach')
+        elif self.menzen:
+            vals.append(u'Menzen')
         vals.extend(self.hidden.to_repr(level=0))
         for tiles in self.exposed:
             vals.extend(tiles.to_repr(level=0))
@@ -314,6 +319,17 @@ class Round(_ReprMixin, object):
             raise NotImplementedError(
                 '%s: %s, %s, %s' % (call_type, caller, callee, convert_hand(mentsu)))
 
+    def reach(self, player, step, score=None):
+        player_ = self.players[player]
+        if step == 1:
+            player_.hand.reach = True
+        elif step == 2:
+            player_.score -= 1000
+            self.config.reach += 1
+            if score:
+                raise NotImplementedError('Add score assertion here.')
+        else:
+            raise NotImplementedError('Unexpected step value: {}'.format(step))
 
     def ryuukyoku(self, hands, scores, ba, reason=None, result=None):
         for hand in hands:
@@ -429,6 +445,10 @@ def _process_call(game, data):
     game.round.call(**data)
 
 
+def _process_reach(game, data):
+    game.round.reach(**data)
+
+
 def _process_ryuukyoku(game, data):
     game.round.ryuukyoku(**data)
     if 'result' in data:
@@ -456,6 +476,8 @@ def _analyze_mjlog(game, parsed_log_data):
             _process_discard(game, data)
         elif tag == 'CALL':
             _process_call(game, data)
+        elif tag == 'REACH':
+            _process_reach(game, data)
         elif tag == 'RYUUKYOKU':
             _process_ryuukyoku(game, data)
         else:
