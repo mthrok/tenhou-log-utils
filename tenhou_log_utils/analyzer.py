@@ -76,7 +76,7 @@ class Config(_ReprMixin, object):
         self.combo = data['combo']
         self.reach = data['reach']
         self.dices = data['dices']
-        self.dora_indicator = data['dora_indicator']
+        self.dora = [data['dora']]
 
     def to_repr(self, level=0):
         vals = []
@@ -84,7 +84,7 @@ class Config(_ReprMixin, object):
         vals.append(u'Dices: %s, %s' % (self.dices[0], self.dices[1]))
         vals.append(u'Combo: %s' % self.combo)
         vals.append(u'Reach: %s' % self.reach)
-        vals.append(u'Dora:  %s' % convert_hand([self.dora_indicator]))
+        vals.append(u'Dora:  %s' % convert_hand(self.dora))
         return _indent(vals, level=level)
 
 
@@ -135,6 +135,12 @@ class Hand(_ReprMixin, object):
 
     def remove(self, tile):
         self.hidden.remove(tile)
+
+    def __contains__(self, tile):
+        return (
+            tile in self.hidden or
+            any(tile in tiles for tiles in self.exposed)
+        )
 
     def _expose_pon_or_chi(self, mentsu):
         n_errors = 0
@@ -197,7 +203,7 @@ class Discards(_ReprMixin, object):
 
 class Player(_ReprMixin, object):
     def __init__(self):
-        self.score = None
+        self.score = 0
         self.hand = None
         self.discards = Discards()
 
@@ -331,6 +337,50 @@ class Round(_ReprMixin, object):
         else:
             raise NotImplementedError('Unexpected step value: {}'.format(step))
 
+    def agari(self, **data):
+        for key, value in data.items():
+            _LG.info('%s: %s', key, value)
+
+        for i, (current, diff) in enumerate(data['scores']):
+            player = self.players[i]
+            if not player.score == current:
+                raise ValueError(
+                    (
+                        'Player score does not match to what is reported. '
+                        'Check implementation. Current: %s, Reported: %s'
+                    ) % (player.score, current)
+                )
+            player.score += diff
+        ba = data['ba']
+        if not self.config.reach == ba['reach']:
+            raise ValueError(
+                (
+                    '#Reach sticks on table does not match to what is reported.'
+                    'Check implementation. Current: %s, Reported: %s'
+                ) % (self.config.reach, ba['reach'])
+            )
+        if not self.config.combo == ba['combo']:
+            raise ValueError(
+                (
+                    '#Combo sticks on table does not match to what is reported.'
+                    'Check implementation. Current: %s, Reported: %s'
+                ) % (self.config.combo, ba['combo'])
+            )
+        # skip ten(Fu, Point, limit), yaku, yakuman, dora, ura-dora
+        _LG.info('Currently, no point conputation is carried out.')
+
+        # Validate winning hand
+        winner = self.players[data['winner']]
+        for tile in data['hand']:
+            if tile not in winner.hand:
+                raise AssertionError(
+                    "Winning hand does not contain the reported tile. "
+                    "Check implementation."
+                )
+
+        # TODO: process discarder, winner,
+        raise NotImplementedError('Not implemented')
+
     def ryuukyoku(self, hands, scores, ba, reason=None, result=None):
         for hand in hands:
             for player in self.players:
@@ -422,11 +472,8 @@ def _process_go(game, data):
 
 
 def _process_un(game, data):
-    if len(data) == 1:
-        raise NotImplementedError()
-    else:
-        _LG.info('Initializing Players.')
-        game.init_players(data)
+    _LG.info('Initializing Players.')
+    game.init_players(data)
 
 
 def _process_init(game, data):
@@ -449,6 +496,12 @@ def _process_reach(game, data):
     game.round.reach(**data)
 
 
+def _process_agari(game, data):
+    game.round.agari(**data)
+    if 'result' in data:
+        game.set_uma(data['result']['uma'])
+
+
 def _process_ryuukyoku(game, data):
     game.round.ryuukyoku(**data)
     if 'result' in data:
@@ -456,32 +509,30 @@ def _process_ryuukyoku(game, data):
 
 
 def _analyze_mjlog(game, parsed_log_data):
-    data_ = []
-    for result in parsed_log_data:
-        tag, data = result['tag'], result['data']
-        _LG.debug('%s: %s', tag, data)
-        if tag == 'GO':
-            _process_go(game, data)
-        elif tag == 'SHUFFLE':
-            pass
-        elif tag == 'TAIKYOKU':
-            pass
-        elif tag == 'UN':
-            _process_un(game, data)
-        elif tag == 'INIT':
-            _process_init(game, data)
-        elif tag == 'DRAW':
-            _process_draw(game, data)
-        elif tag == 'DISCARD':
-            _process_discard(game, data)
-        elif tag == 'CALL':
-            _process_call(game, data)
-        elif tag == 'REACH':
-            _process_reach(game, data)
-        elif tag == 'RYUUKYOKU':
-            _process_ryuukyoku(game, data)
-        else:
-            raise NotImplementedError('%s: %s' % (tag, data))
+    # Skip SHUFFLE and TAIKYOKU tag
+    _process_go(game, parsed_log_data['meta']['GO'])
+    _process_un(game, parsed_log_data['meta']['UN'])
+
+    for round_ in parsed_log_data['rounds']:
+        for result in round_:
+            tag, data = result['tag'], result['data']
+            _LG.debug('%s: %s', tag, data)
+            if tag == 'INIT':
+                _process_init(game, data)
+            elif tag == 'DRAW':
+                _process_draw(game, data)
+            elif tag == 'DISCARD':
+                _process_discard(game, data)
+            elif tag == 'CALL':
+                _process_call(game, data)
+            elif tag == 'REACH':
+                _process_reach(game, data)
+            elif tag == 'AGARI':
+                _process_agari(game, data)
+            elif tag == 'RYUUKYOKU':
+                _process_ryuukyoku(game, data)
+            else:
+                raise NotImplementedError('%s: %s' % (tag, data))
 
 
 def analyze_mjlog(parsed_log_data):
