@@ -179,7 +179,7 @@ def _parse_koutsu(meld):
     return h
 
 
-def _parse_chankan(meld):
+def _parse_kakan(meld):
     # Adopted from http://tenhou.net/img/tehai.js
     added = (meld & 0x0060) >> 5
     t = (meld & 0xFE00) >> 9
@@ -261,8 +261,8 @@ def _parse_call(attrib):
         type_ = 'Pon'
         mentsu = _parse_koutsu(meld)
     elif meld & (1 << 4):
-        type_ = 'ChanKan'
-        mentsu = _parse_chankan(meld)
+        type_ = 'KaKan'
+        mentsu = _parse_kakan(meld)
     elif meld & (1 << 5):
         type_ = 'Nuki'
         mentsu = [meld >> 8]

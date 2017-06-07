@@ -125,7 +125,7 @@ def _print_discard(data):
 ################################################################################
 def _print_call(caller, callee, call_type, mentsu):
     tiles = u''.join([_tile2unicode(tile) for tile in mentsu])
-    if caller == callee:
+    if call_type == 'KaKan' or caller == callee:
         from_ = u''
     else:
         from_ = u' from player {}'.format(callee)
