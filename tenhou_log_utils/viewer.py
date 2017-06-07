@@ -150,14 +150,14 @@ def _print_reach(data):
 ################################################################################
 def _print_ba(ba):
     _LG.info('  Ten-bou:')
-    _LG.info('    Combo: %s', ba[0])
-    _LG.info('    Riichi: %s', ba[1])
+    _LG.info('    Combo: %s', ba['combo'])
+    _LG.info('    Reach: %s', ba['reach'])
 
 
-def _print_final_scores(final_scores):
-    _LG.info('  Final scores:')
-    for score, uma in final_scores:
-        _LG.info('    %4s00: %5s', int(score), uma)
+def _print_final_results(scores, uma):
+    _LG.info('  Result:')
+    for score, uma_ in zip(scores, uma):
+        _LG.info('    %4s: %5s', score, uma_)
 
 
 def _print_agari(data):
@@ -261,8 +261,8 @@ def _print_agari(data):
     for cur, def_ in data['scores']:
         _LG.info('    %4s00: %5s', cur, def_)
 
-    if 'final_scores' in data:
-        _print_final_scores(data['final_scores'])
+    if 'result' in data:
+        _print_final_results(**data['result'])
     _LG.info('=' * 40)
 
 
@@ -280,18 +280,18 @@ def _print_ryuukyoku(data):
         'reach4': '4 Reach',
         'ron3': '3 Ron',
         'kan4': '4 Kan',
-        'out': 'Out of tile'
     }
 
     _LG.info('Ryukyoku:')
-    _LG.info('  Reason: %s', reason[data['type']])
+    if 'reason' in data:
+        _LG.info('  Reason: %s', reason[data['reason']])
     for i, hand in enumerate(data['hands']):
         _LG.info('Player %s: %s', i, convert_hand(hand, True))
-    for cur, def_ in data['scores']:
-        _LG.info('    %s: %s', cur, def_)
+    for cur, diff in data['scores']:
+        _LG.info('    %s: %s', cur, diff)
     _print_ba(data['ba'])
-    if 'final_scores' in data:
-        _print_final_scores(data['final_scores'])
+    if 'result' in data:
+        _print_final_results(**data['result'])
     _LG.info('=' * 40)
 
 

@@ -294,6 +294,17 @@ def _nest_list(vals):
     return list(zip(vals[::2], vals[1::2]))
 
 
+def _parse_ba(val):
+    vals = _parse_str_list(val, type_=int)
+    return {'combo': vals[0], 'reach': vals[1]}
+
+
+def _parse_owari(val):
+    vals = _parse_str_list(val, type_=float)
+    scores = [int(score * 100) for score in vals[::2]]
+    return {'scores': scores, 'uma': vals[1::2]}
+
+
 def _parse_agari(attrib):
     result = {
         'player': int(attrib['who']),
@@ -306,13 +317,11 @@ def _parse_agari(attrib):
         'yaku': _nest_list(_parse_str_list(attrib.get('yaku'), type_=int)),
         'yakuman': _parse_str_list(attrib.get('yakuman', ''), type_=int),
         'ten': _parse_str_list(attrib['ten'], type_=int),
-        'ba': _parse_str_list(attrib['ba'], type_=int),
+        'ba': _parse_ba(attrib['ba']),
         'scores': _nest_list(_parse_str_list(attrib['sc'], type_=int)),
     }
-
     if 'owari' in attrib:
-        result['final_scores'] = _nest_list(
-            _parse_str_list(attrib['owari'], type_=float))
+        result['result'] = _parse_owari(attrib['owari'])
     return result
 
 
@@ -324,17 +333,17 @@ def _parse_dora(attrib):
 ###############################################################################
 def _parse_ryuukyoku(attrib):
     result = {
-        'type': attrib.get('type', 'out'),
         'hands': [
             _parse_str_list(attrib[key], type_=int)
             for key in ['hai0', 'hai1', 'hai2', 'hai3'] if key in attrib
         ],
-        'scores': _nest_list(_parse_str_list(attrib['sc'], type_=int)),
-        'ba': _parse_str_list(attrib['ba'], type_=int),
+        'scores': _nest_list(_parse_score(attrib['sc'])),
+        'ba': _parse_ba(attrib['ba']),
     }
+    if 'type' in attrib:
+        result['reason'] = attrib['type']
     if 'owari' in attrib:
-        result['final_scores'] = _nest_list(
-            _parse_str_list(attrib['owari'], type_=int))
+        result['result'] = _parse_owari(attrib['owari'])
     return result
 
 
