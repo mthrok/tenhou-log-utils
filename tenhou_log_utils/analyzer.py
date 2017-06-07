@@ -88,7 +88,49 @@ class Config(_ReprMixin, object):
         return _indent(vals, level=level)
 
 
-class Player(object):
+def _validate_tile_range(val):
+    if val < 0 or val > 135:
+        raise ValueError('Invalid hand value was given')
+
+
+class Tiles(_ReprMixin, object):
+    def __init__(self, tiles):
+        for tile in tiles:
+            _validate_tile_range(tile)
+        self.tiles = tiles
+        self.tiles.sort()
+
+    def add(self, tile):
+        _validate_tile_range(tile)
+        self.tiles.append(tile)
+        self.tiles.sort()
+
+    def remove(self, tile):
+        self.tiles.remove(tile)
+
+    def to_repr(self, level=0):
+        return _indent([u''.join(convert_hand(self.tiles))], level=level)
+
+
+class Hand(_ReprMixin, object):
+    def __init__(self, tiles):
+        self.hidden = Tiles(tiles)
+        self.exposed = []
+
+    def add(self, tile):
+        self.hidden.add(tile)
+
+    def remove(self, tile):
+        self.hidden.remove(tile)
+
+    def to_repr(self, level=0):
+        vals = self.hidden.to_repr(level=0)
+        for tiles in self.exposed:
+            vals.extend(tiles.to_repr(level=0))
+        return _indent(vals, level=level)
+
+
+class Player(_ReprMixin, object):
     def __init__(self):
         self.score = None
         self.hand = None
@@ -103,14 +145,14 @@ class Player(object):
         """
         self.score = score
 
-    def set_hand(self, hand):
+    def set_hand(self, tiles):
         """Set hand of the player
 
         Parameters
         ----------
-        hand : list of int
+        tiles : list of int
         """
-        self.hand = hand
+        self.hand = Hand(tiles)
 
     def draw(self, tile):
         """Draw new tile
@@ -119,7 +161,7 @@ class Player(object):
         ---------
         tile : int
         """
-        self.hand.append(tile)
+        self.hand.add(tile)
 
     def discard(self, tile):
         """Discard a tile
@@ -141,7 +183,10 @@ class Player(object):
         if self.score:
             ret.append(u'Score: %s' % self.score)
         if self.hand:
-            ret.append(u'Hand:     %s' % convert_hand(self.hand, True))
+            hand_repr = self.hand.to_repr()
+            ret.append(u'Hand:     %s' % hand_repr[0])
+            for exposed in hand_repr[1:]:
+                ret.append(u'          %s' % exposed)
         if self.discards:
             ret.append(u'Discard:  %s' % convert_hand(self.discards))
         return _indent(ret, level=level)
@@ -186,7 +231,7 @@ class Round(_ReprMixin, object):
     def ryuukyoku(self, hands, scores, ba, reason=None, result=None):
         for hand in hands:
             for i, player in enumerate(self.players):
-                if sorted(player.hand) == hand:
+                if player.hand.hidden.tiles == hand:
                     break
             else:
                 raise ValueError(
@@ -324,4 +369,3 @@ def analyze_mjlog(parsed_log_data):
             if 'mentsu' in data:
                 _LG.error(convert_hand(data['mentsu']))
             raise NotImplementedError('%s: %s' % (tag, data))
-
