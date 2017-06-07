@@ -109,7 +109,8 @@ class Tiles(_ReprMixin, object):
         self.tiles.remove(tile)
 
     def to_repr(self, level=0):
-        return _indent([u''.join(convert_hand(self.tiles))], level=level)
+        str_exp = u''.join(convert_hand(self.tiles))
+        return _indent([str_exp], level=level)
 
 
 class Hand(_ReprMixin, object):
@@ -228,6 +229,13 @@ class Round(_ReprMixin, object):
     def discard(self, player, tile):
         self.players[player].discard(tile)
 
+    def call(self, **data):
+        if data['type'] == 'Chi':
+            pass
+
+        raise NotImplementedError(data)
+
+
     def ryuukyoku(self, hands, scores, ba, reason=None, result=None):
         for hand in hands:
             for i, player in enumerate(self.players):
@@ -338,6 +346,10 @@ def _process_discard(game, data):
     game.round.discard(**data)
 
 
+def _process_call(game, data):
+    game.round.call(**data)
+
+
 def _process_ryuukyoku(game, data):
     game.round.ryuukyoku(**data)
     if 'result' in data:
@@ -362,10 +374,10 @@ def analyze_mjlog(parsed_log_data):
             _process_draw(game, data)
         elif tag == 'DISCARD':
             _process_discard(game, data)
+        elif tag == 'CALL':
+            _process_call(game, data)
         elif tag == 'RYUUKYOKU':
             _process_ryuukyoku(game, data)
         else:
             _LG.error('\n%s', game.round)
-            if 'mentsu' in data:
-                _LG.error(convert_hand(data['mentsu']))
             raise NotImplementedError('%s: %s' % (tag, data))
