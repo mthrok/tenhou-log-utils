@@ -413,23 +413,3 @@ def parse_node(tag, attrib):
         raise NotImplementedError('{}: {}'.format(tag, attrib))
     _LG.debug('%s: %s', tag, data)
     return {'tag': tag, 'data': data}
-
-
-###############################################################################
-def parse_mjlog(root_node):
-    """Convert mjlog XML node into JSON
-
-    Parameters
-    ----------
-    root_node (Element)
-        Root node of mjlog XML data.
-
-    Returns
-    -------
-    list
-        List of child nodes parsed.
-    """
-    data = []
-    for node in root_node:
-        data.append(parse_node(node.tag, node.attrib))
-    return data

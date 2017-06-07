@@ -34,6 +34,7 @@ def _populate_view_options(parser):
         'input', help='Input mjlog file.'
     )
     parser.set_defaults(func=_main)
+    parser.add_argument('--round', help='Round number to view', type=int)
     parser.add_argument('--debug', help='Enable debug log', action='store_true')
 
 
