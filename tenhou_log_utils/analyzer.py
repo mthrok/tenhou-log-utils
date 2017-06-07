@@ -94,19 +94,28 @@ def _validate_tile_range(val):
 
 
 class Tiles(_ReprMixin, object):
-    def __init__(self, tiles):
+    def __init__(self, tiles, sort):
         for tile in tiles:
             _validate_tile_range(tile)
         self.tiles = tiles
-        self.tiles.sort()
+        self.sort = sort
+        if self.sort:
+            self.tiles.sort()
 
     def add(self, tile):
         _validate_tile_range(tile)
         self.tiles.append(tile)
-        self.tiles.sort()
+        if self.sort:
+            self.tiles.sort()
 
     def remove(self, tile):
         self.tiles.remove(tile)
+
+    def __len__(self):
+        return len(self.tiles)
+
+    def __contains__(self, item):
+        return item in self.tiles
 
     def to_repr(self, level=0):
         str_exp = u''.join(convert_hand(self.tiles))
@@ -115,8 +124,10 @@ class Tiles(_ReprMixin, object):
 
 class Hand(_ReprMixin, object):
     def __init__(self, tiles):
-        self.hidden = Tiles(tiles)
+        self.menzen = True
+        self.hidden = Tiles(tiles, sort=True)
         self.exposed = []
+        self.nuki = Tiles([], sort=True)
 
     def add(self, tile):
         self.hidden.add(tile)
@@ -124,18 +135,66 @@ class Hand(_ReprMixin, object):
     def remove(self, tile):
         self.hidden.remove(tile)
 
+    def _expose_pon_or_chi(self, mentsu):
+        n_errors = 0
+        for tile in mentsu:
+            try:
+                self.hidden.remove(tile)
+            except ValueError:
+                n_errors += 1
+        if not n_errors == 1:
+            raise AssertionError('Two tiles of mentsu must be present in hand.')
+        self.exposed.append(
+            Tiles(mentsu, sort=True)
+        )
+        self.menzen = False
+
+    def _expose_nuki(self, tile):
+        self.hidden.remove(tile)
+        self.nuki.add(tile)
+
+    def expose(self, call_type, mentsu):
+        if call_type in ['Pon', 'Chi']:
+            self._expose_pon_or_chi(mentsu)
+        elif call_type == 'Nuki':
+            self._expose_nuki(mentsu[0])
+        else:
+            raise NotImplementedError(call_type)
+
     def to_repr(self, level=0):
-        vals = self.hidden.to_repr(level=0)
+        vals = [u'Menzen: %s' % self.menzen]
+        vals.extend(self.hidden.to_repr(level=0))
         for tiles in self.exposed:
             vals.extend(tiles.to_repr(level=0))
+        if len(self.nuki):
+            vals.extend(self.nuki.to_repr(level=0))
         return _indent(vals, level=level)
 
+
+class Discards(_ReprMixin, object):
+    def __init__(self):
+        self.tiles = Tiles([], sort=False)
+        self.taken = []
+
+    def to_repr(self, level=0):
+        vals = []
+        takens = [' ' if val is None else str(val) for val in self.taken]
+        vals.append(u' '.join(self.tiles.to_repr()))
+        vals.append(u'   '.join([ensure_unicode(val) for val in takens]))
+        return _indent(vals, level=level)
+
+    def add(self, tile):
+        self.tiles.add(tile)
+        self.taken.append(None)
+
+    def mark_taken(self, player):
+        self.taken[-1] = player
 
 class Player(_ReprMixin, object):
     def __init__(self):
         self.score = None
         self.hand = None
-        self.discards = []
+        self.discards = Discards()
 
     def set_score(self, score):
         """Set score of the player
@@ -177,7 +236,13 @@ class Player(_ReprMixin, object):
             If the given tile does not exist, which should never happen.
         """
         self.hand.remove(tile)
-        self.discards.append(tile)
+        self.discards.add(tile)
+
+    def mark_taken(self, player):
+        self.discards.mark_taken(player)
+
+    def expose(self, call_type, mentsu):
+        self.hand.expose(call_type, mentsu)
 
     def to_repr(self, level):
         ret = []
@@ -189,7 +254,9 @@ class Player(_ReprMixin, object):
             for exposed in hand_repr[1:]:
                 ret.append(u'          %s' % exposed)
         if self.discards:
-            ret.append(u'Discard:  %s' % convert_hand(self.discards))
+            disc_repr = self.discards.to_repr()
+            ret.append(u'Discard:  %s' % disc_repr[0])
+            ret.append(u'          %s' % disc_repr[1])
         return _indent(ret, level=level)
 
 
@@ -202,6 +269,7 @@ class Round(_ReprMixin, object):
         n_players = 3 if self.mode.sanma else 4
         self.players = [Player() for _ in range(n_players)]
 
+        self.last_discard = {}
         self.ryuukyoku_reason = None
 
     def to_repr(self, level=0):
@@ -214,6 +282,11 @@ class Round(_ReprMixin, object):
         vals.append(u'  Players:')
         for player in self.players:
             vals.extend(player.to_repr(level=2))
+        if self.last_discard:
+            tile = convert_hand([self.last_discard['tile']])
+            vals.append('  Last Discard:')
+            vals.append('    Player: %s' % self.last_discard['player'])
+            vals.append('    tile: %s' %  tile)
         if self.ryuukyoku_reason:
             vals.append('  Ryuukyoku: %s', self.ryuukyoku_reason)
         return _indent(vals, level=level)
@@ -228,17 +301,23 @@ class Round(_ReprMixin, object):
 
     def discard(self, player, tile):
         self.players[player].discard(tile)
+        self.last_discard = {'player': player, 'tile': tile}
 
-    def call(self, **data):
-        if data['type'] == 'Chi':
-            pass
-
-        raise NotImplementedError(data)
+    def call(self, caller, callee, call_type, mentsu):
+        caller_, callee_ = self.players[caller], self.players[callee]
+        if call_type in ['Chi', 'Pon']:
+            callee_.mark_taken(caller)
+            caller_.expose(call_type, mentsu)
+        elif call_type == 'Nuki':
+            caller_.expose(call_type, mentsu)
+        else:
+            raise NotImplementedError(
+                '%s: %s, %s, %s' % (call_type, caller, callee, convert_hand(mentsu)))
 
 
     def ryuukyoku(self, hands, scores, ba, reason=None, result=None):
         for hand in hands:
-            for i, player in enumerate(self.players):
+            for player in self.players:
                 if player.hand.hidden.tiles == hand:
                     break
             else:
@@ -356,14 +435,15 @@ def _process_ryuukyoku(game, data):
         game.set_uma(data['result']['uma'])
 
 
-def analyze_mjlog(parsed_log_data):
+def _analyze_mjlog(game, parsed_log_data):
     data_ = []
-    game = Game()
     for result in parsed_log_data:
         tag, data = result['tag'], result['data']
         _LG.debug('%s: %s', tag, data)
         if tag == 'GO':
             _process_go(game, data)
+        elif tag == 'SHUFFLE':
+            pass
         elif tag == 'TAIKYOKU':
             pass
         elif tag == 'UN':
@@ -379,5 +459,13 @@ def analyze_mjlog(parsed_log_data):
         elif tag == 'RYUUKYOKU':
             _process_ryuukyoku(game, data)
         else:
-            _LG.error('\n%s', game.round)
             raise NotImplementedError('%s: %s' % (tag, data))
+
+
+def analyze_mjlog(parsed_log_data):
+    game = Game()
+    try:
+        _analyze_mjlog(game, parsed_log_data)
+    except Exception as e:
+        print(game.round)
+        raise e
