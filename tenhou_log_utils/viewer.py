@@ -123,14 +123,13 @@ def _print_discard(data):
 
 
 ################################################################################
-def _print_call(data):
-    tiles = u''.join([_tile2unicode(tile) for tile in data['mentsu']])
-    if data['player'] == data['from']:
+def _print_call(caller, callee, call_type, mentsu):
+    tiles = u''.join([_tile2unicode(tile) for tile in mentsu])
+    if caller == callee:
         from_ = u''
     else:
-        from_ = u'from player {}'.format(data['from'])
-    _LG.info(
-        u'Player %s: %s %s: %s', data['player'], data['type'], from_, tiles)
+        from_ = u' from player {}'.format(callee)
+    _LG.info(u'Player %s: %s%s: %s', caller, call_type, from_, tiles)
 
 
 ################################################################################
@@ -329,7 +328,7 @@ def print_node(tag, data):
     elif tag == 'DISCARD':
         _print_discard(data)
     elif tag == 'CALL':
-        _print_call(data)
+        _print_call(**data)
     elif tag == 'REACH':
         _print_reach(data)
     elif tag == 'AGARI':

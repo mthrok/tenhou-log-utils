@@ -250,7 +250,7 @@ def _parse_kan(meld):
 
 
 def _parse_call(attrib):
-    player = int(attrib['who'])
+    caller = int(attrib['who'])
     meld = int(attrib['m'])
 
     _LG.debug('  Meld: %s', bin(meld))
@@ -265,13 +265,15 @@ def _parse_call(attrib):
         mentsu = _parse_chankan(meld)
     elif meld & (1 << 5):
         type_ = 'Nuki'
-        mentsu = meld >> 8
-        # TODO: Check if this is correct.
+        mentsu = [meld >> 8]
     else:
         type_ = 'Kan'
         mentsu = _parse_kan(meld)
-    from_ = (player + meld & 0x3) % 4  # Relative -> Absolute
-    return {'player': player, 'from': from_, 'type': type_, 'mentsu': mentsu}
+    callee = (caller + meld & 0x3) % 4  # Relative -> Absolute
+    return {
+        'caller': caller, 'callee': callee,
+        'call_type': type_, 'mentsu': mentsu
+    }
 
 
 ###############################################################################
@@ -412,8 +414,21 @@ def parse_node(tag, attrib):
     _LG.debug('%s: %s', tag, data)
     return {'tag': tag, 'data': data}
 
+
 ###############################################################################
 def parse_mjlog(root_node):
+    """Convert mjlog XML node into JSON
+
+    Parameters
+    ----------
+    root_node (Element)
+        Root node of mjlog XML data.
+
+    Returns
+    -------
+    list
+        List of child nodes parsed.
+    """
     data = []
     for node in root_node:
         data.append(parse_node(node.tag, node.attrib))
