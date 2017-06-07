@@ -261,7 +261,6 @@ def _print_agari(data):
 
     if 'result' in data:
         _print_final_results(**data['result'])
-    _LG.info('=' * 40)
 
 
 ###############################################################################
@@ -290,7 +289,6 @@ def _print_ryuukyoku(data):
     _print_ba(data['ba'])
     if 'result' in data:
         _print_final_results(**data['result'])
-    _LG.info('=' * 40)
 
 
 ################################################################################

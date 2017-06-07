@@ -413,3 +413,58 @@ def parse_node(tag, attrib):
         raise NotImplementedError('{}: {}'.format(tag, attrib))
     _LG.debug('%s: %s', tag, data)
     return {'tag': tag, 'data': data}
+
+
+###############################################################################
+def _structure_parsed_result(parsed):
+    """Add structure to parsed log data
+
+    Parameters
+    ----------
+    parsed : list of dict
+        Each item in list corresponds to an XML node in original mjlog file.
+
+    Returns
+    -------
+    dict
+        On top level, 'meta' and 'rounds' key are defined. 'meta' contains
+        'SHUFFLE', 'GO', 'UN' and 'TAIKYOKU' keys and its parsed results as
+        values. 'rounds' is a list of which items correspond to one round of
+        game play.
+    """
+    round_ = None
+    game = {'meta': {}, 'rounds': []}
+    for item in parsed:
+        tag, data = item['tag'], item['data']
+        if tag in ['SHUFFLE', 'GO', 'UN', 'TAIKYOKU']:
+            game['meta'][tag] = data
+        elif tag == 'INIT':
+            if round_ is not None:
+                game['rounds'].append(round_)
+            round_ = [item]
+        else:
+            round_.append(item)
+
+    # verfiy all the rounds start with INIT
+    for round_ in game['rounds']:
+        tag = round_[0]['tag']
+        if not tag == 'INIT':
+            raise AssertionError('Round must start with INIT tag; %s' % tag)
+    return game
+
+
+def parse_mjlog(root_node):
+    """Convert mjlog XML node into JSON
+
+    Parameters
+    ----------
+    root_node (Element)
+        Root node of mjlog XML data.
+
+    Returns
+    -------
+    dict
+        Dictionary of of child nodes parsed.
+    """
+    parsed = [parse_node(node.tag, node.attrib) for node in root_node]
+    return _structure_parsed_result(parsed)
