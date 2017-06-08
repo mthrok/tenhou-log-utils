@@ -293,7 +293,7 @@ def _print_ryuukyoku(data):
 
 ################################################################################
 def _print_bye(data):
-    _LG.info('Player %s has left the game.', data['player'])
+    _LG.info('Player %s has left the game.', data['index'])
 
 
 ################################################################################
