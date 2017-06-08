@@ -138,9 +138,9 @@ def _print_reach(data):
         _LG.info(u'Player %s: Reach', data['player'])
     elif data['step'] == 2:
         _LG.info(u'Player %s made deposite.', data['player'])
-        if 'score' in data:
+        if 'scores' in data:
             _LG.info(u'New scores:')
-            _print_scores(data['score'])
+            _print_scores(data['scores'])
     else:
         raise NotImplementedError('Unexpected step value: {}'.format(data))
 

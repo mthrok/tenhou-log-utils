@@ -282,7 +282,7 @@ def _parse_reach(attrib):
     result = {'player': who, 'step': step}
     # Old logs do not have ten values.
     if 'ten' in attrib:
-        result['score'] = _parse_score(attrib['ten'])
+        result['scores'] = _parse_score(attrib['ten'])
     return result
 
 
