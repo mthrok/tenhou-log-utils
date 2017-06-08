@@ -651,6 +651,6 @@ def analyze_mjlog(parsed_log_data):
     game = Game()
     try:
         _analyze_mjlog(game, parsed_log_data)
-    except Exception as e:
-        print(game.round)
-        raise e
+    except Exception as error:
+        _LG.error('\n%s', game.round)
+        raise error
