@@ -117,6 +117,9 @@ class Tiles(_ReprMixin, object):
     def __contains__(self, item):
         return item in self.tiles
 
+    def __getitem__(self, index):
+        return self.tiles[index]
+    
     def __iter__(self):
         return iter(self.tiles)
 
@@ -177,8 +180,10 @@ class Hand(_ReprMixin, object):
             self._expose_pon_or_chi(mentsu)
         elif call_type == 'Nuki':
             self._expose_nuki(mentsu[0])
-        elif call_type == 'Ankan':
+        elif call_type == 'AnKan':
             self._expose_ankan(mentsu)
+        elif call_type == 'MinKan':
+            self._expose_pon_or_chi(mentsu)
         else:
             raise NotImplementedError(call_type)
 
@@ -343,36 +348,45 @@ class Round(_ReprMixin, object):
             caller_.expose(call_type, mentsu)
         elif call_type == 'Kan':
             if caller == callee:
-                caller_.expose('Ankan', mentsu)
+                caller_.expose('AnKan', mentsu)
             else:
-                raise NotImplementedError('MinKan')
+                caller_.expose('MinKan', mentsu)
         elif call_type == 'KaKan':
             base = 4 * (mentsu[0] // 4)
+            print(convert_hand([base]))
             for mentsu_ in caller_.hand.exposed:
-                if base in mentsu_:
+                print(convert_hand(mentsu_))
+                if base == 4 * (mentsu_[0] // 4):
                     for tile in mentsu:
                         if tile not in mentsu_:
                             mentsu_.add(tile)
                             caller_.hand.hidden.remove(tile)
+                    break
+            else:
+                raise AssertionError('Somethign is wrong with Kakan')
         else:
             raise NotImplementedError(
                 '%s: %s, %s, %s' % (call_type, caller, callee, convert_hand(mentsu)))
 
-    def reach(self, player, step, score=None):
+    def reach(self, player, step, scores=None):
         player_ = self.players[player]
         if step == 1:
             player_.hand.reach = True
         elif step == 2:
             player_.score -= 1000
             self.config.reach += 1
-            if score:
-                raise NotImplementedError('Add score assertion here.')
+            if scores:
+                for player, score in zip(self.players, scores):
+                    if player.score != score:
+                        raise AssertionError(
+                            'Player score does not match to what is reported. '
+                            'Check implementation. Current: %s, Reported: %s'
+                        ) % (player.score, score)
         else:
             raise NotImplementedError('Unexpected step value: {}'.format(step))
 
     def agari(self, **data):
-        for i, (current, diff) in enumerate(data['scores']):
-            player = self.players[i]
+        for player, (current, diff) in zip(self.players, data['scores']):
             if not player.score == current:
                 raise ValueError(
                     (
@@ -405,7 +419,7 @@ class Round(_ReprMixin, object):
         for tile in winner.hand.hidden:
             if tile not in data['hand']:
                 raise AssertionError(
-                    'Winning hand does not contain the reported tile. '
+                    'Winning hand is not contained the reported tile. '
                     'Check implementation.'
                 )
 
