@@ -346,6 +346,14 @@ class Round(_ReprMixin, object):
                 caller_.expose('Ankan', mentsu)
             else:
                 raise NotImplementedError('MinKan')
+        elif call_type == 'KaKan':
+            base = 4 * (mentsu[0] // 4)
+            for mentsu_ in caller_.hand.exposed:
+                if base in mentsu_:
+                    for tile in mentsu:
+                        if tile not in mentsu_:
+                            mentsu_.add(tile)
+                            caller_.hand.hidden.remove(tile)
         else:
             raise NotImplementedError(
                 '%s: %s, %s, %s' % (call_type, caller, callee, convert_hand(mentsu)))
@@ -551,6 +559,9 @@ def _process_call(game, data):
     game.round.call(**data)
 
 
+def _process_dora(game, data):
+    game.round.config.dora.append(data['hai'])
+
 def _process_reach(game, data):
     game.round.reach(**data)
 
@@ -606,6 +617,8 @@ def _analyze_mjlog(game, parsed_log_data):
                 _process_discard(game, data)
             elif tag == 'CALL':
                 _process_call(game, data)
+            elif tag == 'DORA':
+                _process_dora(game, data)
             elif tag == 'REACH':
                 _process_reach(game, data)
             elif tag == 'AGARI':
