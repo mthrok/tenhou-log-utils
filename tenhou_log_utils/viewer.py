@@ -90,13 +90,14 @@ def _print_taikyoku(data):
 ################################################################################
 def _print_scores(scores):
     for i, score in enumerate(scores):
-        _LG.info('  %5s: %6s', i, score)
+        _LG.info('  %6s: %6s', i, score)
 
 
 def _print_init(data):
     dora = convert_hand([data['dora']])
+    field = ['Ton', 'Nan', 'Xia', 'Pei'][data['round'] // 4]
     _LG.info('Initial Game State:')
-    _LG.info('  Round: %s', data['round'])
+    _LG.info('  Round: %s %s Kyoku', field, data['round'] % 4 + 1)
     _LG.info('  Combo: %s', data['combo'])
     _LG.info('  Reach: %s', data['reach'])
     _LG.info('  Dice 1: %s', data['dices'][0])
@@ -155,7 +156,7 @@ def _print_ba(ba):
 def _print_final_results(scores, uma):
     _LG.info('  Result:')
     for score, uma_ in zip(scores, uma):
-        _LG.info('    %4s: %5s', score, uma_)
+        _LG.info('    %6s: %6s', score, uma_)
 
 
 def _print_agari(data):
@@ -257,7 +258,7 @@ def _print_agari(data):
     _print_ba(data['ba'])
     _LG.info('  Scores:')
     for cur, def_ in data['scores']:
-        _LG.info('    %6s: %5s', cur, def_)
+        _LG.info('    %6s: %6s', cur, def_)
 
     if 'result' in data:
         _print_final_results(**data['result'])
