@@ -304,10 +304,15 @@ def _parse_owari(val):
     return {'scores': scores, 'uma': vals[1::2]}
 
 
+def _parse_ten(val):
+    vals = _parse_str_list(val, type_=int)
+    return {'fu': vals[0], 'point': vals[1], 'limit': vals[2]}
+
+
 def _parse_agari(attrib):
     result = {
-        'player': int(attrib['who']),
-        'from': int(attrib['fromWho']),
+        'winner': int(attrib['who']),
+        'discarder': int(attrib['fromWho']),
         'hand': _parse_str_list(attrib['hai'], type_=int),
         'machi': _parse_str_list(attrib['machi'], type_=int),
         'dora': _parse_str_list(attrib['doraHai'], type_=int),
@@ -315,9 +320,9 @@ def _parse_agari(attrib):
             attrib.get('doraHaiUra', ''), type_=int),
         'yaku': _nest_list(_parse_str_list(attrib.get('yaku'), type_=int)),
         'yakuman': _parse_str_list(attrib.get('yakuman', ''), type_=int),
-        'ten': _parse_str_list(attrib['ten'], type_=int),
+        'ten': _parse_ten(attrib['ten']),
         'ba': _parse_ba(attrib['ba']),
-        'scores': _nest_list(_parse_str_list(attrib['sc'], type_=int)),
+        'scores': _nest_list(_parse_score(attrib['sc'])),
     }
     if 'owari' in attrib:
         result['result'] = _parse_owari(attrib['owari'])

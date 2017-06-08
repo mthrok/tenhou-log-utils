@@ -27,10 +27,10 @@ def main(args):
     data = parse_mjlog(load_mjlog(args.input))
     _print_meta(data['meta'])
 
-    if args.round:
-        rounds = [data['rounds'][args.round]]
-    else:
+    if args.round is None:
         rounds = data['rounds']
+    else:
+        rounds = [data['rounds'][args.round]]
 
     for round_data in rounds:
         _print_round(round_data)

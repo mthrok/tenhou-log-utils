@@ -234,11 +234,11 @@ def _print_agari(data):
         'Ura-dora',
         'Aka-dora',
     ]
-    _LG.info('Player %s wins.', data['player'])
-    if data['player'] == data['from']:
+    _LG.info('Player %s wins.', data['winner'])
+    if data['winner'] == data['discarder']:
         _LG.info('  Tsumo.')
     else:
-        _LG.info('  Ron from player %s', data['from'])
+        _LG.info('  Ron from player %s', data['discarder'])
     _LG.info('  Hand: %s', convert_hand(sorted(data['hand'])))
     _LG.info('  Machi: %s', convert_hand(data['machi']))
     _LG.info('  Dora Indicator: %s', convert_hand(data['dora']))
@@ -250,14 +250,14 @@ def _print_agari(data):
     if data['yakuman']:
         for yaku in data['yakuman']:
             _LG.info('      %s (%s)', yaku_name[yaku], yaku)
-    _LG.info('  Fu: %s', data['ten'][0])
-    _LG.info('  Score: %s', data['ten'][1])
-    if data['ten'][2]:
-        _LG.info('    - %s', limit[data['ten'][2]])
+    _LG.info('  Fu: %s', data['ten']['fu'])
+    _LG.info('  Score: %s', data['ten']['point'])
+    if data['ten']['limit']:
+        _LG.info('    - %s', limit[data['ten']['limit']])
     _print_ba(data['ba'])
     _LG.info('  Scores:')
     for cur, def_ in data['scores']:
-        _LG.info('    %4s00: %5s', cur, def_)
+        _LG.info('    %6s: %5s', cur, def_)
 
     if 'result' in data:
         _print_final_results(**data['result'])
