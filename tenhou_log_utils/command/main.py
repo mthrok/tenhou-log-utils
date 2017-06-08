@@ -19,12 +19,24 @@ def _parse_command_line_args():
 
 
 def _add_subparsers(subparsers):
+    parser = subparsers.add_parser('parse')
+    _populate_parse_options(parser)
     parser = subparsers.add_parser('view')
     _populate_view_options(parser)
     parser = subparsers.add_parser('list')
     _populate_list_options(parser)
     parser = subparsers.add_parser('download')
     _populate_download_options(parser)
+
+
+###############################################################################
+def _populate_parse_options(parser):
+    from .parse import main as _main
+    parser.add_argument(
+        'input', help='Input mjlog file.'
+    )
+    parser.set_defaults(func=_main)
+    parser.add_argument('--debug', help='Enable debug log', action='store_true')
 
 
 ###############################################################################
