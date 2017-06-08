@@ -117,6 +117,9 @@ class Tiles(_ReprMixin, object):
     def __contains__(self, item):
         return item in self.tiles
 
+    def __iter__(self):
+        return iter(self.tiles)
+
     def to_repr(self, level=0):
         str_exp = u''.join(convert_hand(self.tiles))
         return _indent([str_exp], level=level)
@@ -206,6 +209,7 @@ class Player(_ReprMixin, object):
         self.score = 0
         self.hand = None
         self.discards = Discards()
+        self.available = True
 
     def set_score(self, score):
         """Set score of the player
@@ -302,6 +306,11 @@ class Round(_ReprMixin, object):
             vals.append('  Ryuukyoku: %s', self.ryuukyoku_reason)
         return _indent(vals, level=level)
 
+    def get_top_players(self):
+        players = sorted(self.players, key=lambda x: x.score, reverse=True)
+        top_score = players[0].score
+        return [player for player in players if player.score == top_score]
+
     def init_players(self, hands, scores):
         for player, hand, score in zip(self.players, hands, scores):
             player.set_hand(hand)
@@ -338,9 +347,6 @@ class Round(_ReprMixin, object):
             raise NotImplementedError('Unexpected step value: {}'.format(step))
 
     def agari(self, **data):
-        for key, value in data.items():
-            _LG.info('%s: %s', key, value)
-
         for i, (current, diff) in enumerate(data['scores']):
             player = self.players[i]
             if not player.score == current:
@@ -352,17 +358,18 @@ class Round(_ReprMixin, object):
                 )
             player.score += diff
         ba = data['ba']
-        if not self.config.reach == ba['reach']:
+        if self.config.reach != ba['reach']:
             raise ValueError(
                 (
-                    '#Reach sticks on table does not match to what is reported.'
+                    '#Reach sticks on table does not match with what is reported.'
                     'Check implementation. Current: %s, Reported: %s'
                 ) % (self.config.reach, ba['reach'])
             )
-        if not self.config.combo == ba['combo']:
+        self.config.reach = 0
+        if self.config.combo != ba['combo']:
             raise ValueError(
                 (
-                    '#Combo sticks on table does not match to what is reported.'
+                    '#Combo sticks on table does not match with what is reported.'
                     'Check implementation. Current: %s, Reported: %s'
                 ) % (self.config.combo, ba['combo'])
             )
@@ -371,15 +378,24 @@ class Round(_ReprMixin, object):
 
         # Validate winning hand
         winner = self.players[data['winner']]
-        for tile in data['hand']:
-            if tile not in winner.hand:
+        for tile in winner.hand.hidden:
+            if tile not in data['hand']:
                 raise AssertionError(
-                    "Winning hand does not contain the reported tile. "
-                    "Check implementation."
+                    'Winning hand does not contain the reported tile. '
+                    'Check implementation.'
                 )
 
-        # TODO: process discarder, winner,
-        raise NotImplementedError('Not implemented')
+        if 'loser' in data:
+            if data['loser'] != self.last_discard['player']:
+                raise AssertionError(
+                    'Loser and the player who dicarded a tile '
+                    'does not match.'
+                )
+            if data['machi'][0] != self.last_discard['tile']:
+                raise AssertionError(
+                    'Machi tile and the tile lastly discarded '
+                    'does not match.'
+                )
 
     def ryuukyoku(self, hands, scores, ba, reason=None, result=None):
         for hand in hands:
@@ -389,7 +405,7 @@ class Round(_ReprMixin, object):
             else:
                 raise ValueError(
                     (
-                        'Player hand does not match to what is reported. '
+                        'Player hand does not match with what is reported. '
                         'Check implementation. Current: %s, Reported: %s'
                     ) % (player.hand, hand)
                 )
@@ -397,7 +413,7 @@ class Round(_ReprMixin, object):
             if not player.score == score:
                 raise ValueError(
                     (
-                        'Player score does not match to what is reported. '
+                        'Player score does not match with what is reported. '
                         'Check implementation. Current: %s, Reported: %s'
                     ) % (player.score, score)
                 )
@@ -406,14 +422,14 @@ class Round(_ReprMixin, object):
         if not self.config.reach == ba['reach']:
             raise ValueError(
                 (
-                    '#Reach sticks on table does not match to what is reported.'
+                    '#Reach sticks on table does not match with what is reported.'
                     'Check implementation. Current: %s, Reported: %s'
                 ) % (self.config.reach, ba['reach'])
             )
         if not self.config.combo == ba['combo']:
             raise ValueError(
                 (
-                    '#Combo sticks on table does not match to what is reported.'
+                    '#Combo sticks on table does not match with what is reported.'
                     'Check implementation. Current: %s, Reported: %s'
                 ) % (self.config.combo, ba['combo'])
             )
@@ -421,14 +437,26 @@ class Round(_ReprMixin, object):
             self.ryuukyoku_reason = reason
 
         if result:
+            if self.config.reach:
+                top_players = self.get_top_players()
+                if len(top_players) != 1:
+                    raise NotImplementedError()
+                top_players[0].score += 1000 * self.config.reach
+                self.config.reach = 0
             for player, score in zip(self.players, result['scores']):
                 if not player.score == score:
                     raise ValueError(
                         (
-                            'Player score does not match to what is reported. '
+                            'Player score does not match with what is reported. '
                             'Check implementation. Current: %s, Reported: %s'
                         ) % (player.score, score)
                     )
+
+    def bye(self, index):
+        self.players[index].available = False
+
+    def resume(self, index, **_):
+        self.players[index].available = True
 
 
 class Game(object):
@@ -462,8 +490,23 @@ class Game(object):
         self.round = Round(n_round, config, self.mode)
         self.round.init_players(hands, scores)
 
+        if self.past_rounds:
+            cur_round = self.round
+            prev_round = self.past_rounds[-1]
+            for prev_p, cur_p in zip(prev_round.players, cur_round.players):
+                if prev_p.score != cur_p.score:
+                    raise AssertionError(
+                        (
+                            'The previous score does not match to new one. '
+                            'Check implementation. Current: %s, Reported: %s'
+                        ) % (prev_p.score, cur_p.score)
+                    )
+
     def set_uma(self, uma):
         self.uma = uma
+
+    def archive_round(self):
+        self.past_rounds.append(self.round)
 
 def _process_go(game, data):
     _LG.info('Configuring game.')
@@ -497,15 +540,37 @@ def _process_reach(game, data):
 
 
 def _process_agari(game, data):
+    for key, value in data.items():
+        if key in ['hand', 'machi', 'dora']:
+            value = convert_hand(value)
+        _LG.info('%s: %s', key, value)
+
     game.round.agari(**data)
+    game.archive_round()
     if 'result' in data:
         game.set_uma(data['result']['uma'])
 
 
 def _process_ryuukyoku(game, data):
+    for key, value in data.items():
+        if key in ['hand', 'machi', 'dora']:
+            value = convert_hand(value)
+        if key in ['hands']:
+            value = [convert_hand(hand) for hand in value]
+        _LG.info('%s: %s', key, value)
+
     game.round.ryuukyoku(**data)
+    game.archive_round()
     if 'result' in data:
         game.set_uma(data['result']['uma'])
+
+
+def _process_bye(game, data):
+    game.round.bye(**data)
+
+
+def _process_resume(game, data):
+    game.round.resume(**data)
 
 
 def _analyze_mjlog(game, parsed_log_data):
@@ -531,6 +596,10 @@ def _analyze_mjlog(game, parsed_log_data):
                 _process_agari(game, data)
             elif tag == 'RYUUKYOKU':
                 _process_ryuukyoku(game, data)
+            elif tag == 'BYE':
+                _process_bye(game, data)
+            elif tag == 'RESUME':
+                _process_resume(game, data)
             else:
                 raise NotImplementedError('%s: %s' % (tag, data))
 
