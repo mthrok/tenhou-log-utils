@@ -24,6 +24,7 @@ def _print_round(round_data):
 
 def main(args):
     """Entry point for `view` command."""
+    logging.getLogger('tenhou_log_utils.parser').setLevel(logging.WARN)
     data = parse_mjlog(load_mjlog(args.input))
     _print_meta(data['meta'])
 
