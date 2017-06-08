@@ -235,10 +235,10 @@ def _print_agari(data):
         'Aka-dora',
     ]
     _LG.info('Player %s wins.', data['winner'])
-    if data['winner'] == data['discarder']:
-        _LG.info('  Tsumo.')
+    if 'loser' in data:
+        _LG.info('  Ron from player %s', data['loser'])
     else:
-        _LG.info('  Ron from player %s', data['discarder'])
+        _LG.info('  Tsumo.')
     _LG.info('  Hand: %s', convert_hand(sorted(data['hand'])))
     _LG.info('  Machi: %s', convert_hand(data['machi']))
     _LG.info('  Dora Indicator: %s', convert_hand(data['dora']))
