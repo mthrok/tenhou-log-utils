@@ -163,11 +163,22 @@ class Hand(_ReprMixin, object):
         self.hidden.remove(tile)
         self.nuki.add(tile)
 
+    def _expose_ankan(self, mentsu):
+        base = mentsu[0] - mentsu[0] % 4
+        full_mentsu = [base + i for i in range(4)]
+        for tile in full_mentsu:
+            self.hidden.remove(tile)
+        self.exposed.append(
+            Tiles(full_mentsu, sort=True)
+        )
+
     def expose(self, call_type, mentsu):
         if call_type in ['Pon', 'Chi']:
             self._expose_pon_or_chi(mentsu)
         elif call_type == 'Nuki':
             self._expose_nuki(mentsu[0])
+        elif call_type == 'Ankan':
+            self._expose_ankan(mentsu)
         else:
             raise NotImplementedError(call_type)
 
@@ -330,6 +341,11 @@ class Round(_ReprMixin, object):
             caller_.expose(call_type, mentsu)
         elif call_type == 'Nuki':
             caller_.expose(call_type, mentsu)
+        elif call_type == 'Kan':
+            if caller == callee:
+                caller_.expose('Ankan', mentsu)
+            else:
+                raise NotImplementedError('MinKan')
         else:
             raise NotImplementedError(
                 '%s: %s, %s, %s' % (call_type, caller, callee, convert_hand(mentsu)))
