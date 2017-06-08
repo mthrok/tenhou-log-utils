@@ -77,9 +77,20 @@ class Config(_ReprMixin, object):
         self.reach = data['reach']
         self.dices = data['dices']
         self.dora = [data['dora']]
+        self.round = {
+            'field': data['round'] // 4,
+            'match': data['round'] % 4,
+        }
 
     def to_repr(self, level=0):
         vals = []
+        field_, match_ = self.round['field'], self.round['match'] + 1
+        rep = 0 if field_ < 4 else field_ // 4
+        field = ['Ton', 'Nan', 'Xia', 'Pei'][field_ % 4]
+        if rep:
+            vals.append(u'Round: %s %s %s Kyoku' % (rep, field, match_))
+        else:
+            vals.append(u'Round: %s %s Kyoku' % (field, match_))
         vals.append(u'Oya:   %s' % self.oya)
         vals.append(u'Dices: %s, %s' % (self.dices[0], self.dices[1]))
         vals.append(u'Combo: %s' % self.combo)
@@ -119,7 +130,7 @@ class Tiles(_ReprMixin, object):
 
     def __getitem__(self, index):
         return self.tiles[index]
-    
+
     def __iter__(self):
         return iter(self.tiles)
 
@@ -219,6 +230,7 @@ class Discards(_ReprMixin, object):
 
     def mark_taken(self, player):
         self.taken[-1] = player
+
 
 class Player(_ReprMixin, object):
     def __init__(self):
@@ -436,11 +448,10 @@ class Round(_ReprMixin, object):
                 )
 
     def ryuukyoku(self, hands, scores, ba, reason=None, result=None):
-        for hand in hands:
-            for player in self.players:
-                if player.hand.hidden.tiles == hand:
-                    break
-            else:
+        for player, hand in zip(self.players, hands):
+            if hand is None:
+                continue
+            if player.hand.hidden.tiles != hand:
                 raise ValueError(
                     (
                         'Player hand does not match with what is reported. '
@@ -581,11 +592,6 @@ def _process_reach(game, data):
 
 
 def _process_agari(game, data):
-    for key, value in data.items():
-        if key in ['hand', 'machi', 'dora']:
-            value = convert_hand(value)
-        _LG.info('%s: %s', key, value)
-
     game.round.agari(**data)
     game.archive_round()
     if 'result' in data:
@@ -593,13 +599,6 @@ def _process_agari(game, data):
 
 
 def _process_ryuukyoku(game, data):
-    for key, value in data.items():
-        if key in ['hand', 'machi', 'dora']:
-            value = convert_hand(value)
-        if key in ['hands']:
-            value = [convert_hand(hand) for hand in value]
-        _LG.info('%s: %s', key, value)
-
     game.round.ryuukyoku(**data)
     game.archive_round()
     if 'result' in data:
@@ -625,6 +624,7 @@ def _analyze_mjlog(game, parsed_log_data):
             _LG.debug('%s: %s', tag, data)
             if tag == 'INIT':
                 _process_init(game, data)
+                _LG.info('\n%s', game.round)
             elif tag == 'DRAW':
                 _process_draw(game, data)
             elif tag == 'DISCARD':
@@ -637,8 +637,10 @@ def _analyze_mjlog(game, parsed_log_data):
                 _process_reach(game, data)
             elif tag == 'AGARI':
                 _process_agari(game, data)
+                _LG.info('\n%s', game.round)
             elif tag == 'RYUUKYOKU':
                 _process_ryuukyoku(game, data)
+                _LG.info('\n%s', game.round)
             elif tag == 'BYE':
                 _process_bye(game, data)
             elif tag == 'RESUME':
