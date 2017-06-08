@@ -94,7 +94,7 @@ def _print_scores(scores):
 
 
 def _print_init(data):
-    dora = convert_hand([data['dora_indicator']])
+    dora = convert_hand([data['dora']])
     _LG.info('Initial Game State:')
     _LG.info('  Round: %s', data['round'])
     _LG.info('  Combo: %s', data['combo'])

@@ -102,7 +102,7 @@ def _parse_init(attrib):
         'combo': seed[1],
         'reach': seed[2],
         'dices': seed[3:5],
-        'dora_indicator': seed[5],
+        'dora': seed[5],
     }
 
 
