@@ -12,4 +12,5 @@ _LG = logging.getLogger(__name__)
 
 def main(args):
     """Entry potin for `analyze` command."""
+    logging.getLogger('tenhou_log_utils.parser').setLevel(logging.WARN)
     analyze_mjlog(parse_mjlog(load_mjlog(args.input)))
