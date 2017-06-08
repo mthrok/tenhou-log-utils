@@ -55,16 +55,13 @@ def _parse_go(attrib):
 
 
 ###############################################################################
+def _parse_resume(attrib):
+    index = int(list(attrib.keys())[0][1])
+    name = unquote(list(attrib.values())[0])
+    return {'index': index, 'name': name}
+
+
 def _parse_un(attrib):
-    if len(attrib) == 1:  # Disconnected player has returned
-        index = int(list(attrib.keys())[0][1])
-        name = unquote(list(attrib.values())[0])
-        return [{
-            'index': index, 'name': name,
-            'dan': None, 'rate': None, 'sex': None
-        }]
-
-
     indices, names = [], []
     for key in ['n0', 'n1', 'n2', 'n3']:
         if key in attrib:
@@ -383,7 +380,11 @@ def parse_node(tag, attrib):
     if tag == 'GO':
         data = _parse_go(attrib)
     elif tag == 'UN':
-        data = _parse_un(attrib)
+        if len(attrib) == 1:  # Disconnected player has returned
+            data = _parse_resume(attrib)
+            tag = 'RESUME'
+        else:
+            data = _parse_un(attrib)
     elif tag == 'TAIKYOKU':
         data = _parse_taikyoku(attrib)
     elif tag == 'SHUFFLE':
@@ -416,6 +417,17 @@ def parse_node(tag, attrib):
 
 
 ###############################################################################
+def _validate_structure(parsed, meta, rounds):
+    # Verfiy all the items are passed
+    if not len(parsed) == len(meta) + sum(len(r) for r in rounds):
+        raise AssertionError('Not all the items are structured.')
+    # Verfiy all the rounds start with INIT tag
+    for round_ in rounds:
+        tag = round_[0]['tag']
+        if not tag == 'INIT':
+            raise AssertionError('Round must start with INIT tag; %s' % tag)
+
+
 def _structure_parsed_result(parsed):
     """Add structure to parsed log data
 
@@ -444,12 +456,9 @@ def _structure_parsed_result(parsed):
             round_ = [item]
         else:
             round_.append(item)
+    game['rounds'].append(round_)
 
-    # verfiy all the rounds start with INIT
-    for round_ in game['rounds']:
-        tag = round_[0]['tag']
-        if not tag == 'INIT':
-            raise AssertionError('Round must start with INIT tag; %s' % tag)
+    _validate_structure(parsed, game['meta'], game['rounds'])
     return game
 
 

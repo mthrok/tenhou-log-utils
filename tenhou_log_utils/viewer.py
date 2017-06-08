@@ -68,12 +68,12 @@ def _print_go(data):
 
 
 ################################################################################
-def _print_un(data):
-    if len(data) == 1:
-        index, name = data[0]['index'], data[0]['name']
-        _LG.info('Player %s (%s) has returned to the game.', index, name)
-        return
+def _print_resume(data):
+    index, name = data['index'], data['name']
+    _LG.info('Player %s (%s) has returned to the game.', index, name)
 
+
+def _print_un(data):
     _LG.info('Players:')
     _LG.info('  %5s: %3s, %8s, %3s, %s', 'Index', 'Dan', 'Rate', 'Sex', 'Name')
     for datum in data:
@@ -335,5 +335,7 @@ def print_node(tag, data):
         _print_ryuukyoku(data)
     elif tag == 'BYE':
         _print_bye(data)
+    elif tag == 'RESUME':
+        _print_resume(data)
     else:
         raise NotImplementedError('{}: {}'.format(tag, data))
