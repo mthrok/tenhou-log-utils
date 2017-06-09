@@ -297,7 +297,8 @@ def _parse_ba(val):
 def _parse_owari(val):
     vals = _parse_str_list(val, type_=float)
     scores = [int(score * 100) for score in vals[::2]]
-    return {'scores': scores, 'uma': vals[1::2]}
+    uma = vals[1::2]
+    return [(score, um) for score, um in zip(scores, uma)]
 
 
 def _parse_ten(ten):

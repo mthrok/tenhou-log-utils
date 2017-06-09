@@ -159,10 +159,10 @@ def _print_ba(ba):
     _LG.info('    Reach: %s', ba['reach'])
 
 
-def _print_final_results(scores, uma):
+def _print_result(scores):
     _LG.info('  Result:')
-    for score, uma_ in zip(scores, uma):
-        _LG.info('    %6s: %6s', score, uma_)
+    for score, uma in scores:
+        _LG.info('    %6s: %6s', score, uma)
 
 
 def _print_agari(data):
@@ -267,7 +267,7 @@ def _print_agari(data):
         _LG.info('    %6s: %6s', cur, def_)
 
     if 'result' in data:
-        _print_final_results(**data['result'])
+        _print_result(data['result'])
 
 
 ###############################################################################
@@ -296,7 +296,7 @@ def _print_ryuukyoku(data):
         _LG.info('    %s: %s', cur, diff)
     _print_ba(data['ba'])
     if 'result' in data:
-        _print_final_results(**data['result'])
+        _print_result(data['result'])
 
 
 ################################################################################
