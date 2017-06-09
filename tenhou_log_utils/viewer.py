@@ -95,9 +95,15 @@ def _print_scores(scores):
 
 def _print_init(data):
     dora = convert_hand([data['dora']])
-    field = ['Ton', 'Nan', 'Xia', 'Pei'][data['round'] // 4]
+    field_ = data['round'] // 4
+    repeat = field_ // 4
+    round_ = data['round'] % 4 + 1
+    field = ['Ton', 'Nan', 'Xia', 'Pei'][field_ % 4]
     _LG.info('Initial Game State:')
-    _LG.info('  Round: %s %s Kyoku', field, data['round'] % 4 + 1)
+    if repeat:
+        _LG.info('  Round: %s %s %s Kyoku', repeat, field, round_)
+    else:
+        _LG.info('  Round: %s %s Kyoku', field, round_)
     _LG.info('  Combo: %s', data['combo'])
     _LG.info('  Reach: %s', data['reach'])
     _LG.info('  Dice 1: %s', data['dices'][0])
@@ -284,7 +290,8 @@ def _print_ryuukyoku(data):
     if 'reason' in data:
         _LG.info('  Reason: %s', reason[data['reason']])
     for i, hand in enumerate(data['hands']):
-        _LG.info('Player %s: %s', i, convert_hand(sorted(hand)))
+        if hand is not None:
+            _LG.info('Player %s: %s', i, convert_hand(sorted(hand)))
     for cur, diff in data['scores']:
         _LG.info('    %s: %s', cur, diff)
     _print_ba(data['ba'])

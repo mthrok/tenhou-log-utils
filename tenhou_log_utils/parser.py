@@ -340,8 +340,8 @@ def _parse_dora(attrib):
 def _parse_ryuukyoku(attrib):
     result = {
         'hands': [
-            _parse_str_list(attrib[key], type_=int)
-            for key in ['hai0', 'hai1', 'hai2', 'hai3'] if key in attrib
+            _parse_str_list(attrib[key], type_=int) if key in attrib else None
+            for key in ['hai0', 'hai1', 'hai2', 'hai3']
         ],
         'scores': _nest_list(_parse_score(attrib['sc'])),
         'ba': _parse_ba(attrib['ba']),
