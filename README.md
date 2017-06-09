@@ -1,54 +1,44 @@
-# 🀐 Tenhou Log Command Line Utility 🀅
+# 🀐 Tenhou Log Command Line Utility 🀐
 
-## What is this?
+## 🀦 What is this? / このリポジトリについて
 
-Tenhou Log Utils is command line tools to interact with Tenhou.net mahjong play log, written in Python.
-Currently two features are available.
+Tenhou Log Utils is command line tools, written in Python, to analyze game log of online mahjong Tenhou.net.
 
- - Pick up game IDs of your play form local flash player cache.
+天鳳ログユーティリティはオンライン麻雀サイト tenhou.net のゲームログを解析するためのコマンドラインツールです。
+
+Tenhou Log Utils
+
+以下のことができます。
+
+ - Pick up IDs of the games you played form Flash player cache.
+
+    ローカルディスクに保存されている Flash Player のキャッシュから、今までにプレイした卓のログ ID をリストアップ。
 
  - Download `mjlog` file from tenhou.net.
 
+    `mjlog` 形式ファイルをダウンロード。
+
  - View `mjlog` file in console.
 
-## Installation
-
-### Normal Installation
-
-```bash
-pip install git+git://github.com/mthrok/tenhou-log-utils.git
-```
-
-### Development Installation
-
-If you want to modify the command line, you can install in editable mode.
-
-#### 1. Clone the repository
-
-```bash
-git clone http://github.com/mthrok/tenhou-log-utils
-cd tenhou-log-utils
-```
-
-#### 2. Install with `-e` option.
-
-```bash
-pip install -e .
-```
-
-This will install the utility from the local repo, and you can change the behavior by modifying the content of `tenhou_log_utils` directory.
+    `mjlog` 形式ファイルの中身をコンソールに表示。
 
 
-## Usage
+## 🀧 Usage / 使い方
 
-Once it's installed, you should be able to use command `tlu` (stands for Tenhou Log Utilities).
+Once it's installed, you should be able to use command `tlu` (stands for Tenhou Log Utilities).   
 You can use `--help` to see how to use.
+
+
+インストールが完了すると、`tlu` コマンド (`T`enhou `L`og `U`tilities の略です。) が使えるはずです。   
+`--help` オプションで使い方が表示されます。（英語のみ）
 
 ```bash
 tlu --help
 ```
 
-This should print message like the following.
+This will print message like the following.
+
+以下のようなメッセージが表示されます。
 
 ```
 usage: tlu [-h] {view,list,download} ...
@@ -56,15 +46,22 @@ usage: tlu [-h] {view,list,download} ...
 Utility for tenhou.net log files.
 
 positional arguments:
-  {view,list,analyze,download}
+  {view,list,download}
 
 optional arguments:
   -h, --help            show this help message and exit
 ```
 
-### 1. List up your game history.
+
+### 🀇 List up your game history. / ゲーム履歴を表示
 
 Using `list` sub command you can list up the information on your play history.
+
+`list` サブコマンドを使うとローカルディスクに保存されたゲームの履歴を表示できます。
+
+```bash
+tlu list
+```
 
 ```
 /Users/moto/Library/Preferences/Macromedia/Flash Player/#SharedObjects/XRF2TRTU/mjv.jp/mjinfo.sol:
@@ -91,7 +88,9 @@ Using `list` sub command you can list up the information on your play history.
   
 ```
 
-You can use `--id-only` option to only show log IDs. You can use these IDs to download play log from tenhou.net.
+You can use `--id-only` option to only show log IDs. You need these IDs to download play log from tenhou.net.
+
+`--id-only` オプションを使うことで ID のみを表示することができます。これらを使って tenhou.net からゲームのログをダウンロードするのに必要になります。
 
 ```bash
 tlu list --id-only
@@ -116,24 +115,28 @@ tlu list --id-only
 ```
 
 
-### 2. Download mjlog file from tenhou.net
+### 🀈 Download mjlog file / mjlog ファイルのダウンロード
 
-With `download` sub command, you can download play log (`mjlog` file) from tenhou.net.
+With `download` sub command, you can download play log (`mjlog` file). You need the log ID of the game you want to download.
 
-You need the log ID of the game you want to download.
+`download` サブコマンドを使ってゲームのプレイログ（`mjlog` 形式）をダウンロードすることができます。ダウンロードしたいゲームの ID が必要になります。
 
 Example)
 
 The following command will download the play log with ID `2017060314gm-0009-0000-3b2aa4ca` to `2017060314gm-0009-0000-3b2aa4ca.mjlog` in the local storage.
+
+以下のコマンドは ID `2017060314gm-0009-0000-3b2aa4ca` のゲームログを `2017060314gm-0009-0000-3b2aa4ca.mjlog` にダウンロードします。
 
 ```bash
 tlu download 2017060314gm-0009-0000-3b2aa4ca 2017060314gm-0009-0000-3b2aa4ca.mjlog
 ```
 
 
-### 3. View downloaded mjlog file.
+### 🀉 View downloaded mjlog file.
 
 You can use `view` command to see the content of a `mjlog` file.
+
+`view` コマンドを使って `mjlog` ファイルの中身を表示できます。
 
 ```bash
 tlu view 2017060314gm-0009-0000-3b2aa4ca.mjlog
@@ -229,3 +232,44 @@ Player 1 wins.
     -11200: -61.0
 
 ```
+
+
+## 🀨 Installation / インストール
+
+### 🀙 Normal Installation / 通常インストール
+
+Use the following command to install TLU.
+
+以下のコマンドでインストールできます。
+
+```bash
+pip install git+git://github.com/mthrok/tenhou-log-utils.git
+```
+
+### 🀚 Development Installation / 開発版インストール
+
+If you want to modify the command line, you can install in editable mode.
+
+#### 1. Clone the repository / リポジトリをクローン
+
+```bash
+git clone http://github.com/mthrok/tenhou-log-utils
+cd tenhou-log-utils
+```
+
+#### 2. Install with `-e` option. / `-e` オプション付きでインストール
+
+```bash
+pip install -e .
+```
+
+This will install the utility from the local repo, and you can change the behavior by modifying the content of `tenhou_log_utils` directory.
+
+これでコマンドがクローンしたレポジトリを参照するようにインストールされます。`tenhou_log_utils` の中のスクリプトを編集することで、コマンドの挙動を変更できます。
+
+
+## 🀩 Bug Report / バグの報告
+
+Please file a bug report at [issues page](https://github.com/mthrok/tenhou-log-utils/issues). Ideas and suggestions are also welcome.
+
+バグを発見した場合は [こちら](https://github.com/mthrok/tenhou-log-utils/issues)に報告をお願いします。機能改善要望もどうぞ。日本語でおk。
