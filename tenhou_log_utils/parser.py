@@ -51,7 +51,7 @@ def _parse_game_mode(game_mode):
 def _parse_go(attrib):
     table, mode = _parse_game_mode(int(attrib['type']))
     number_ = int(attrib.get('lobby', '-1'))
-    return {'table': table, 'mode': mode, 'num': number_}
+    return {'table': table, 'mode': mode, 'lobby': number_}
 
 
 ###############################################################################

@@ -61,7 +61,7 @@ def _print_shuffle(data):
 
 ################################################################################
 def _print_go(data):
-    _LG.info('Lobby%s:', '' if data['num'] < 0 else ' %s' % data['num'])
+    _LG.info('Lobby%s:', '' if data['lobby'] < 0 else ' %s' % data['lobby'])
     _LG.info('  Table: %s', data['table'])
     for key, value in data['mode'].items():
         _LG.info('    %s: %s', key, value)
