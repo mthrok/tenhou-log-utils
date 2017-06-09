@@ -63,7 +63,7 @@ def _print_shuffle(data):
 def _print_go(data):
     _LG.info('Lobby%s:', '' if data['lobby'] < 0 else ' %s' % data['lobby'])
     _LG.info('  Table: %s', data['table'])
-    for key, value in data['mode'].items():
+    for key, value in data['config'].items():
         _LG.info('    %s: %s', key, value)
 
 
@@ -76,10 +76,10 @@ def _print_resume(data):
 def _print_un(data):
     _LG.info('Players:')
     _LG.info('  %5s: %3s, %8s, %3s, %s', 'Index', 'Dan', 'Rate', 'Sex', 'Name')
-    for datum in data:
-        index, name = datum['index'], datum['name']
-        dan, rate, sex = datum['dan'], datum['rate'], datum['sex']
-        _LG.info('  %5s: %3s, %8.2f, %3s, %s', index, dan, rate, sex, name)
+    for i, datum in enumerate(data):
+        dan, rate = datum['dan'], datum['rate']
+        name, sex = datum['name'], datum['sex']
+        _LG.info('  %5s: %3s, %8.2f, %3s, %s', i, dan, rate, sex, name)
 
 
 ################################################################################

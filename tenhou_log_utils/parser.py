@@ -23,11 +23,11 @@ def _parse_shuffle(attrib):
 
 
 ###############################################################################
-def _parse_game_mode(game_mode):
-    _LG.debug('  Game Mode: %s', bin(game_mode))
-    test = not bool(game_mode & 0x01)
-    tokujou = bool((game_mode & 0x20) >> 5)
-    joukyu = bool((game_mode & 0x80) >> 7)
+def _parse_game_config(game_config):
+    _LG.debug('  Game Config: %s', bin(game_config))
+    test = not bool(game_config & 0x01)
+    tokujou = bool((game_config & 0x20) >> 5)
+    joukyu = bool((game_config & 0x80) >> 7)
     if tokujou and joukyu:
         table = 'tenhou'
     elif test:
@@ -38,20 +38,20 @@ def _parse_game_mode(game_mode):
         table = 'joukyu'
     else:
         table = 'dan-i'
-    mode = {
-        'red': not bool((game_mode & 0x02) >> 1),
-        'kui': not bool((game_mode & 0x04) >> 2),
-        'ton-nan': bool((game_mode & 0x08) >> 3),
-        'sanma': bool((game_mode & 0x10) >> 4),
-        'soku': bool((game_mode & 0x40) >> 6),
+    config = {
+        'red': not bool((game_config & 0x02) >> 1),
+        'kui': not bool((game_config & 0x04) >> 2),
+        'ton-nan': bool((game_config & 0x08) >> 3),
+        'sanma': bool((game_config & 0x10) >> 4),
+        'soku': bool((game_config & 0x40) >> 6),
     }
-    return table, mode
+    return table, config
 
 
 def _parse_go(attrib):
-    table, mode = _parse_game_mode(int(attrib['type']))
+    table, config = _parse_game_config(int(attrib['type']))
     number_ = int(attrib.get('lobby', '-1'))
-    return {'table': table, 'mode': mode, 'lobby': number_}
+    return {'table': table, 'config': config, 'lobby': number_}
 
 
 ###############################################################################
@@ -62,18 +62,14 @@ def _parse_resume(attrib):
 
 
 def _parse_un(attrib):
-    indices, names = [], []
-    for key in ['n0', 'n1', 'n2', 'n3']:
-        if key in attrib:
-            indices.append(int(key[1]))
-            names.append(unquote(attrib[key]))
+    keys = ['n0', 'n1', 'n2', 'n3']
+    names = [unquote(attrib[key]) for key in keys if key in attrib]
     dans = _parse_str_list(attrib.get('dan', '-1,-1,-1,-1'), type_=int)
     rates = _parse_str_list(attrib['rate'], type_=float)
     sexes = _parse_str_list(attrib['sx'], type_=ensure_unicode)
-
     return [
-        {'index': i, 'name': name, 'dan': dan, 'rate': rate, 'sex': sex}
-        for i, name, dan, rate, sex in zip(indices, names, dans, rates, sexes)
+        {'name': name, 'dan': dan, 'rate': rate, 'sex': sex}
+        for name, dan, rate, sex in zip(names, dans, rates, sexes)
     ]
 
 
