@@ -114,8 +114,12 @@ def _analyze_mjlog(game, parsed_log_data):
 
 def analyze_mjlog(parsed_log_data):
     game = Game()
+    error = None
     try:
         _analyze_mjlog(game, parsed_log_data)
     except Exception as error:
+        pass
+
+    if error is not None:
         _LG.error('\n%s', game.round)
         raise error

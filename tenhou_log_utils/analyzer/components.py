@@ -343,10 +343,23 @@ class Player(_ReprMixin, object):
         self.hand.expose(call_type, mentsu)
 
 
+def _validate_discarded(mentsu, callee, last_discarded):
+    if last_discarded['player'] != callee:
+        raise AssertionError(
+            'Player who discarded last (%s) does not match callee (%s)'
+            % (last_discarded['player'], callee)
+        )
+    
+    if last_discarded['tile'] not in mentsu:
+        raise AssertionError(
+            'Last discarded tile (%s) is not included in mentsu; %s'
+            % (last_discarded, mentsu)
+        )
+
 def _validate_score(players, scores):
     for player, (score, _) in zip(players, scores):
         if not player.score == score:
-            raise ValueError(
+            raise AssertionError(
                 (
                     'Player score does not match with what is reported. '
                     'Check implementation. Current: %s, Reported: %s'
@@ -356,14 +369,14 @@ def _validate_score(players, scores):
 
 def _validate_sticks(state, expected):
     if state.reach != expected['reach']:
-        raise ValueError(
+        raise AssertionError(
             (
                 '#Reach sticks on table does not match with what is reported.'
                 'Check implementation. Current: %s, Reported: %s'
             ) % (state.reach, expected['reach'])
         )
     if state.combo != expected['combo']:
-        raise ValueError(
+        raise AssertionError(
             (
                 '#Combo sticks on table does not match with what is reported.'
                 'Check implementation. Current: %s, Reported: %s'
@@ -447,7 +460,7 @@ class Round(_ReprMixin, object):
     def call(self, caller, callee, call_type, mentsu):
         caller_, callee_ = self.players[caller], self.players[callee]
         if call_type in ['Chi', 'Pon']:
-            # TODO: Add validation against discard
+            _validate_discarded(mentsu, callee, self.last_discard)
             callee_.mark_taken(caller)
             caller_.expose(call_type, mentsu)
         elif call_type == 'Nuki':
@@ -456,7 +469,7 @@ class Round(_ReprMixin, object):
             if caller == callee:
                 caller_.expose('AnKan', mentsu)
             else:
-                # TODO: Add validation against discard
+                _validate_discarded(mentsu, callee, self.last_discard)
                 caller_.expose('MinKan', mentsu)
         elif call_type == 'KaKan':
             base = 4 * (mentsu[0] // 4)
