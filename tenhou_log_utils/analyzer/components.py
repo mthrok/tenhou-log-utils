@@ -273,9 +273,11 @@ class Discards(_ReprMixin, object):
 
 class Player(_ReprMixin, object):
     """Player hands and discards"""
-    def __init__(self):
-        self.score = 0
-        self.hand = None
+    def __init__(self, index, hand, score):
+        self.index = index
+        self.hand = hand
+        self.score = score
+
         self.discards = Discards()
         self.available = True
 
@@ -291,24 +293,6 @@ class Player(_ReprMixin, object):
             ret.append(u'Discard:  %s' % disc_repr[0])
             ret.append(u'          %s' % disc_repr[1])
         return _indent(ret, level=level)
-
-    def set_score(self, score):
-        """Set score of the player
-
-        Parameters
-        ----------
-        score : int
-        """
-        self.score = score
-
-    def set_hand(self, tiles):
-        """Set hand of the player
-
-        Parameters
-        ----------
-        tiles : list of int
-        """
-        self.hand = Hand(tiles)
 
     def draw(self, tile):
         """Draw new tile
@@ -343,13 +327,21 @@ class Player(_ReprMixin, object):
         self.hand.expose(call_type, mentsu)
 
 
+def _validate_last_draw(player, last_draw):
+    if player != last_draw:
+        raise AssertionError(
+            'Player who declared reach (%s) does not match '
+            'to the on who drew a tile last (%s).' % (player, last_draw)
+        )
+
+
 def _validate_discarded(mentsu, callee, last_discarded):
     if last_discarded['player'] != callee:
         raise AssertionError(
             'Player who discarded last (%s) does not match callee (%s)'
             % (last_discarded['player'], callee)
         )
-    
+
     if last_discarded['tile'] not in mentsu:
         raise AssertionError(
             'Last discarded tile (%s) is not included in mentsu; %s'
@@ -417,6 +409,7 @@ class Round(_ReprMixin, object):
 
         self.players = []
         self.last_discard = {}
+        self.last_draw = {}
         self.ryuukyoku_reason = None
 
     def to_repr(self, level=0):
@@ -443,15 +436,16 @@ class Round(_ReprMixin, object):
         top_score = players[0].score
         return [player for player in players if player.score == top_score]
 
-    def init_players(self, hands, scores):
-        n_players = 3 if self.mode.sanma else 4
-        self.players = [Player() for _ in range(n_players)]
-        for player, hand, score in zip(self.players, hands, scores):
-            player.set_hand(hand)
-            player.set_score(score)
+    def init_players(self, tiles, scores):
+        for index, (tiles_, score) in enumerate(zip(tiles, scores)):
+            if self.mode.sanma and index == 3:
+                continue
+            hand = Hand(tiles_)
+            self.players.append(Player(index, hand, score))
 
     def draw(self, player, tile):
         self.players[player].draw(tile)
+        self.last_draw = {'player': player, 'tile': tile}
 
     def discard(self, player, tile):
         self.players[player].discard(tile)
@@ -483,6 +477,7 @@ class Round(_ReprMixin, object):
                 '%s: %s, %s, %s' % (call_type, caller, callee, convert_hand(mentsu)))
 
     def reach(self, player, step, scores=None):
+        _validate_last_draw(player, self.last_draw['player'])
         player_ = self.players[player]
         if step == 1:
             player_.hand.reach = True
@@ -504,6 +499,8 @@ class Round(_ReprMixin, object):
         _validate_sticks(self.state, data['ba'])
         if 'loser' in data:
             _validate_furikomi(data['loser'], data['machi'][0], self.last_discard)
+        else:
+            _validate_last_draw(data['winner'], self.last_draw['player'])
 
         for player, (_, gain) in zip(self.players, scores):
             player.score += gain
