@@ -380,7 +380,7 @@ def parse_node(tag, attrib):
         JSON object
     """
     attrib = _ensure_unicode(attrib)
-    _LG.debug('%s: %s', tag, attrib)
+    _LG.debug('Input:  %s: %s', tag, attrib)
     if tag == 'GO':
         data = _parse_go(attrib)
     elif tag == 'UN':
@@ -416,7 +416,7 @@ def parse_node(tag, attrib):
         data = _parse_bye(attrib)
     else:
         raise NotImplementedError('{}: {}'.format(tag, attrib))
-    _LG.debug('%s: %s', tag, data)
+    _LG.debug('Output: %s: %s', tag, data)
     return {'tag': tag, 'data': data}
 
 
@@ -466,7 +466,7 @@ def _structure_parsed_result(parsed):
     return game
 
 
-def parse_mjlog(root_node):
+def parse_mjlog(root_node, tags=None):
     """Convert mjlog XML node into JSON
 
     Parameters
@@ -474,10 +474,19 @@ def parse_mjlog(root_node):
     root_node (Element)
         Root node of mjlog XML data.
 
+    tag : list of str
+        When present, only the given tags are parsed and no post-processing
+        is carried out.
+
     Returns
     -------
     dict
         Dictionary of of child nodes parsed.
     """
-    parsed = [parse_node(node.tag, node.attrib) for node in root_node]
-    return _structure_parsed_result(parsed)
+    parsed = []
+    for node in root_node:
+        if tags is None or node.tag in tags:
+            parsed.append(parse_node(node.tag, node.attrib))
+    if tags is None:
+        return _structure_parsed_result(parsed)
+    return parsed

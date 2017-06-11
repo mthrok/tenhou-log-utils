@@ -36,6 +36,7 @@ def _populate_parse_options(parser):
         'input', help='Input mjlog file.'
     )
     parser.set_defaults(func=_main)
+    parser.add_argument('--tags', help='Display only given tags', nargs='*')
     parser.add_argument('--debug', help='Enable debug log', action='store_true')
 
 
