@@ -159,9 +159,9 @@ def _print_ba(ba):
     _LG.info('    Reach: %s', ba['reach'])
 
 
-def _print_result(scores):
+def _print_result(result):
     _LG.info('  Result:')
-    for score, uma in scores:
+    for score, uma in zip(result['scores'], result['uma']):
         _LG.info('    %6s: %6s', score, uma)
 
 
@@ -263,8 +263,8 @@ def _print_agari(data):
         _LG.info('    - %s', limit[data['ten']['limit']])
     _print_ba(data['ba'])
     _LG.info('  Scores:')
-    for cur, def_ in data['scores']:
-        _LG.info('    %6s: %6s', cur, def_)
+    for cur, gain in zip(data['scores'], data['gains']):
+        _LG.info('    %6s: %6s', cur, gain)
 
     if 'result' in data:
         _print_result(data['result'])
@@ -292,8 +292,9 @@ def _print_ryuukyoku(data):
     for i, hand in enumerate(data['hands']):
         if hand is not None:
             _LG.info('Player %s: %s', i, convert_hand(sorted(hand)))
-    for cur, diff in data['scores']:
-        _LG.info('    %s: %s', cur, diff)
+    _LG.info('  Scores:')
+    for cur, gain in zip(data['scores'], data['gains']):
+        _LG.info('    %6s: %6s', cur, gain)
     _print_ba(data['ba'])
     if 'result' in data:
         _print_result(data['result'])

@@ -297,8 +297,7 @@ def _parse_ba(val):
 def _parse_owari(val):
     vals = _parse_str_list(val, type_=float)
     scores = [int(score * 100) for score in vals[::2]]
-    uma = vals[1::2]
-    return [(score, um) for score, um in zip(scores, uma)]
+    return {'scores': scores, 'uma': vals[1::2]}
 
 
 def _parse_ten(ten):
@@ -306,8 +305,14 @@ def _parse_ten(ten):
     return {'fu': vals[0], 'point': vals[1], 'limit': vals[2]}
 
 
+def _parse_sc(sc_val):
+    vals = _parse_score(sc_val)
+    return vals[::2], vals[1::2]
+
+
 def _parse_agari(attrib):
     winner, from_who = int(attrib['who']), int(attrib['fromWho'])
+    scores, gain = _parse_sc(attrib['sc'])
     result = {
         'winner': winner,
         'hand': _parse_str_list(attrib['hai'], type_=int),
@@ -319,7 +324,8 @@ def _parse_agari(attrib):
         'yakuman': _parse_str_list(attrib.get('yakuman', ''), type_=int),
         'ten': _parse_ten(attrib['ten']),
         'ba': _parse_ba(attrib['ba']),
-        'scores': _nest_list(_parse_score(attrib['sc'])),
+        'scores': scores,
+        'gains': gain,
     }
     if winner != from_who:
         result['loser'] = from_who
@@ -335,13 +341,15 @@ def _parse_dora(attrib):
 
 ###############################################################################
 def _parse_ryuukyoku(attrib):
+    scores, gain = _parse_sc(attrib['sc'])
     result = {
         'hands': [
             _parse_str_list(attrib[key], type_=int) if key in attrib else None
             for key in ['hai0', 'hai1', 'hai2', 'hai3']
         ],
-        'scores': _nest_list(_parse_score(attrib['sc'])),
         'ba': _parse_ba(attrib['ba']),
+        'scores': scores,
+        'gains': gain,
     }
     if 'type' in attrib:
         result['reason'] = attrib['type']
