@@ -239,13 +239,13 @@ def _parse_kan(meld):
         hai0, h[2] = h[2], hai0
     if kui == 2:
         hai0, h[0] = h[0], hai0
-    return [hai0] + h if kui else h[:2]
+    return ([hai0] + h) if kui else h[:2]
 
 
 def _parse_call(attrib):
     caller = int(attrib['who'])
     meld = int(attrib['m'])
-
+    callee_rel = meld & 0x3
     _LG.debug('  Meld: %s', bin(meld))
     if meld & (1 << 2):
         mentsu = _parse_shuntsu(meld)
@@ -260,11 +260,11 @@ def _parse_call(attrib):
         type_ = 'Nuki'
         mentsu = [meld >> 8]
     else:
-        type_ = 'Kan'
+        type_ = 'MinKan' if callee_rel else 'AnKan'
         mentsu = _parse_kan(meld)
-    callee = (caller + meld & 0x3) % 4  # Relative -> Absolute
+    callee_abs = (caller + callee_rel) % 4
     return {
-        'caller': caller, 'callee': callee,
+        'caller': caller, 'callee': callee_abs,
         'call_type': type_, 'mentsu': mentsu
     }
 
