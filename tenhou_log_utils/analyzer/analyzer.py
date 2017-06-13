@@ -3,6 +3,7 @@ from __future__ import absolute_import
 import logging
 
 from .components import Game
+from .features import extract_feature
 
 
 _LG = logging.getLogger(__name__)
@@ -78,3 +79,6 @@ def analyze_mjlog(parsed_log_data):
     except Exception as error:
         _try_print(game)
         raise error
+
+    for data in extract_feature(game):
+        _LG.info(data)

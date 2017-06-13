@@ -436,7 +436,8 @@ class Round(_ReprMixin, object):
         self.players = []
         self.last_discard = {}
         self.last_draw = {}
-        self.ryuukyoku_reason = None
+        self._agari = {}
+        self._ryuukyoku = {}
 
     def to_repr(self, level=0):
         vals = [u'Round: %s' % self.index]
@@ -458,8 +459,8 @@ class Round(_ReprMixin, object):
             vals.append(u'  Players:')
             for player in self.players:
                 vals.extend(player.to_repr(level=2))
-        if self.ryuukyoku_reason:
-            vals.append(u'  Ryuukyoku: %s' % self.ryuukyoku_reason)
+        if self._ryuukyoku:
+            vals.append(u'  Ryuukyoku: %s' % self._ryuukyoku['reason'])
         return _indent(vals, level=level)
 
     def init_players(self, tiles, scores):
@@ -588,6 +589,13 @@ class Round(_ReprMixin, object):
             player.score += gain
         self.state.reach = 0
 
+        # Save AGARI info
+        self._agari = {
+            'winner': data['winner'],
+            'loser': data.get('loser'),
+            'yaku': data['yaku'],
+        }
+
         if 'result' in data:
             _validate_score(self.players, data['result']['scores'])
 
@@ -607,7 +615,7 @@ class Round(_ReprMixin, object):
             player.score += gain
 
         if reason:
-            self.ryuukyoku_reason = reason
+            self._ryuukyoku['reason'] = reason
 
         if result:
             if self.state.reach:
