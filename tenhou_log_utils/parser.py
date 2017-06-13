@@ -50,7 +50,7 @@ def _parse_game_config(game_config):
 
 def _parse_go(attrib):
     table, config = _parse_game_config(int(attrib['type']))
-    number_ = int(attrib.get('lobby', '-1'))
+    number_ = int(attrib['lobby']) if 'lobby' in attrib else None
     return {'table': table, 'config': config, 'lobby': number_}
 
 
