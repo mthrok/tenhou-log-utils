@@ -460,7 +460,7 @@ def _structure_parsed_result(parsed):
     game = {'meta': {}, 'rounds': []}
     for item in parsed:
         tag, data = item['tag'], item['data']
-        if tag in ['SHUFFLE', 'GO', 'UN', 'TAIKYOKU']:
+        if tag in ['SHUFFLE', 'GO', 'UN', 'TAIKYOKU', 'BYE', 'RESUME']:
             game['meta'][tag] = data
         elif tag == 'INIT':
             if round_ is not None:
