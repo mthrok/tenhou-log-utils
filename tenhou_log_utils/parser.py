@@ -466,6 +466,11 @@ def _structure_parsed_result(parsed):
             if round_ is not None:
                 game['rounds'].append(round_)
             round_ = [item]
+        elif tag in ['BYE', 'RESUME']:
+            if round_ is not None:
+                round_.append(item)
+            else:
+                game['meta'][tag] = data
         else:
             round_.append(item)
     game['rounds'].append(round_)
